@@ -1,0 +1,27 @@
+---
+import { codeToHtml } from 'shiki';
+
+interface Props {
+  code: string;
+  lang?: string;
+  filename?: string;
+  title?: string;
+}
+
+const { code, lang = 'text', filename, title } = Astro.props;
+const fileLabel = filename ?? title ?? lang;
+const html = await codeToHtml(code.trimEnd(), {
+  lang,
+  theme: 'github-dark',
+});
+---
+
+<div class="codeblock">
+  <div class="codeblock-bar">
+    <span class="cb-dot" style="background:#ff5f57"></span>
+    <span class="cb-dot" style="background:#febc2e"></span>
+    <span class="cb-dot" style="background:#28c840"></span>
+    <span class="cb-file">{fileLabel}</span>
+  </div>
+  <div set:html={html} />
+</div>

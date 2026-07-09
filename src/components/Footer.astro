@@ -1,0 +1,13 @@
+---
+import { getContent } from '../data/content';
+
+const content = getContent();
+const tagline = content.footer.tagline.replace('{heart}', '<span class="heart">&hearts;</span>');
+---
+
+<footer class="footer">
+  <div class="footer-inner">
+    <a class="footer-logo" href="/"><span class="b">&lt;</span>{content.nav.logo}<span class="b">/&gt;</span></a>
+    <div class="footer-text" set:html={`${tagline}<br>${content.footer.copyright}`} />
+  </div>
+</footer>

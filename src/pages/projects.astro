@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { getContent } from '../data/content';
+import { getProjects, groupProjectsByCategory } from '../lib/github';
+
+const content = getContent();
+const projects = await getProjects();
+const grouped = groupProjectsByCategory(projects, content.projects.categories);
+---
+
+<BaseLayout
+  activeNav="/projects"
+  title="Projects"
+  description={content.projects.pageDescription}
+  canonical="/projects"
+>
+  <section class="band proj-hero">
+    <div class="inner">
+      <div class="section-label">{content.projects.label}</div>
+      <h2 class="section-title">{content.projects.pageTitle[0]} <em>{content.projects.pageTitle[1]}</em></h2>
+      <p class="proj-hero-desc">{content.projects.pageDescription}</p>
+    </div>
+  </section>
+
+  <section class="band" style="padding-top:24px;">
+    <div class="inner">
+      {grouped.map((group) => (
+        group.projects.length > 0 && (
+          <>
+            <div class="cat-label">{group.label}</div>
+            <div class="proj-grid" style="margin-bottom:40px;">
+              {group.projects.map((project) => <ProjectCard project={project} />)}
+            </div>
+          </>
+        )
+      ))}
+    </div>
+  </section>
+</BaseLayout>

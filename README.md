@@ -1,38 +1,49 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# itshamid-v3 — Portfolio
 
-## Getting Started
+Astro portfolio site based on the `__template__` designs.
 
-First, run the development server:
+## Quick start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Content
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+| What | Where |
+|------|-------|
+| Site copy (hero, experience, contact, resume, etc.) | [`src/data/content.json`](src/data/content.json) |
+| Fonts, colors, layout | [`src/config/theme.ts`](src/config/theme.ts) |
+| Blog posts | [`src/content/blog/*.mdx`](src/content/blog/) |
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## Blog (MDX)
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+Write posts in `src/content/blog/`. Available MDX components:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- `<CodeBlock lang="ts" filename="file.ts" code={\`...\`} />` — styled terminal code block
+- `<Callout>` — highlighted tip box
+- `<PullQuote>` — pull quote
+- Fenced code blocks also render with syntax highlighting via Shiki
 
-## Learn More
+## GitHub projects
 
-To learn more about Next.js, take a look at the following resources:
+Projects are fetched at build time from the GitHub API using `content.json` → `projects.github`:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `username` — GitHub user
+- `featuredRepos` — shown in the “Published on npm” section
+- `repoOverrides` — custom tags, notes, descriptions per repo
+- `flagship` — featured product card (not from GitHub)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## SEO
 
-## Deploy on Vercel
+- Meta, Open Graph, and Twitter tags via `BaseLayout`
+- Sitemap via `@astrojs/sitemap`
+- `public/robots.txt`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Build
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```bash
+npm run build
+npm run preview
+```

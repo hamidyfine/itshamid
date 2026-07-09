@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog — Hamid Yaftian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #f7f4ef;
+  --cream2: #f0ece4;
+  --white: #ffffff;
+  --ink: #1a1512;
+  --ink2: #4a4640;
+  --ink3: #8b857b;
+  --orange: #E95420;
+  --orange-dim: #f4845f;
+  --orange-bg: #fdf0eb;
+  --border: #e6ddd3;
+  --maroon: #1c0806;
+  --nav-h: 62px;
+  --max: 1120px;
+  --pad: 48px;
+  --font: 'Ubuntu', sans-serif;
+  --mono: 'Ubuntu Mono', monospace;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--cream);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: var(--orange); text-decoration: none; }
+a:hover { color: #c8431a; }
+
+/* ── NAV ─────────────────────────────────────────────── */
+.nav {
+  position: sticky; top: 0; z-index: 200;
+  height: var(--nav-h);
+  background: rgba(247,244,239,.88);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 var(--pad);
+}
+.nav-inner {
+  width: 100%; max-width: var(--max); margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  font-family: var(--mono); font-size: 15px; font-weight: 700;
+  color: var(--ink); letter-spacing: -.3px;
+}
+.nav-logo .b { color: var(--orange); }
+.nav-links { display: flex; gap: 4px; align-items: center; }
+.nav-link {
+  background: none; border: none; cursor: pointer;
+  padding: 6px 13px; font-family: var(--font); font-size: 13.5px;
+  color: var(--ink2); border-radius: 6px; transition: all .15s;
+  text-decoration: none;
+}
+.nav-link:hover { color: var(--ink); background: var(--cream2); }
+.nav-link.active { color: var(--orange); }
+.nav-right { display: flex; align-items: center; gap: 18px; }
+.status {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12.5px; color: var(--ink2);
+}
+.status .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #2eb872; box-shadow: 0 0 0 3px rgba(46,184,114,.18);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+.nav-cta {
+  background: var(--orange); color: #fff; border: none; cursor: pointer;
+  padding: 8px 16px; border-radius: 7px; font-family: var(--font);
+  font-size: 13px; font-weight: 500; transition: background .15s;
+  text-decoration: none; display: inline-block;
+}
+.nav-cta:hover { background: #c8431a; color: #fff; }
+
+/* ── LAYOUT ──────────────────────────────────────────── */
+.band { width: 100%; padding: 84px var(--pad); }
+.inner { max-width: var(--max); margin: 0 auto; }
+.section-label {
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 18px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-label::before { content: ''; width: 24px; height: 2px; background: var(--orange); }
+.section-title {
+  font-size: clamp(30px, 3.6vw, 46px); font-weight: 700;
+  letter-spacing: -1px; line-height: 1.08; color: var(--ink);
+}
+.section-title em { font-style: normal; color: var(--orange); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 12px 22px; border-radius: 9px; font-family: var(--font);
+  font-size: 14px; font-weight: 500; cursor: pointer; border: none;
+  transition: all .15s; text-decoration: none;
+}
+.btn-orange { background: var(--orange); color: #fff; }
+.btn-orange:hover { background: #c8431a; color: #fff; }
+.btn-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--border); }
+.btn-ghost:hover { border-color: var(--ink2); background: var(--cream2); color: var(--ink); }
+.chip {
+  font-family: var(--mono); font-size: 12px; padding: 5px 12px;
+  border-radius: 6px; background: var(--white);
+  color: var(--ink2); border: 1px solid var(--border);
+}
+
+/* ── BLOG HERO ───────────────────────────────────────── */
+.blog-hero { padding: 64px var(--pad) 12px; }
+.blog-hero .section-title { max-width: 760px; }
+.blog-hero-desc { font-size: 16px; line-height: 1.7; color: var(--ink2); max-width: 560px; margin-top: 18px; }
+
+/* ── FILTER BAR ──────────────────────────────────────── */
+.filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 30px 0 4px; }
+.filter-btn {
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  letter-spacing: .04em; padding: 7px 15px; border-radius: 100px;
+  background: var(--white); color: var(--ink2); border: 1px solid var(--border);
+  cursor: pointer; transition: all .15s;
+}
+.filter-btn:hover { border-color: var(--orange-dim); color: var(--ink); }
+.filter-btn.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+/* ── FEATURED ────────────────────────────────────────── */
+.featured {
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: 0;
+  background: var(--maroon); border-radius: 18px; overflow: hidden;
+  position: relative; margin-bottom: 40px; text-decoration: none;
+  transition: box-shadow .18s, transform .18s;
+}
+.featured:hover { transform: translateY(-3px); box-shadow: 0 22px 60px -22px rgba(28,8,6,.6); }
+.featured-art {
+  position: relative; min-height: 320px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.featured-art::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(135deg, rgba(255,255,255,.045) 0 12px, transparent 12px 24px),
+    radial-gradient(120% 120% at 20% 20%, rgba(233,84,32,.5), transparent 55%);
+}
+.featured-art .glyph {
+  position: relative; z-index: 1; font-family: var(--mono);
+  font-size: 56px; font-weight: 700; color: rgba(255,255,255,.92); letter-spacing: -2px;
+}
+.featured-art .glyph .br { color: var(--orange); }
+.featured-body { padding: 48px 48px 48px 40px; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 1; }
+.featured-kicker { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--orange); margin-bottom: 16px; }
+.featured-title { font-size: clamp(26px, 2.8vw, 34px); font-weight: 700; letter-spacing: -.8px; line-height: 1.12; color: #fff; margin-bottom: 16px; }
+.featured-excerpt { font-size: 14.5px; line-height: 1.65; color: rgba(255,255,255,.6); margin-bottom: 22px; max-width: 440px; }
+.featured-meta { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 11.5px; color: rgba(255,255,255,.45); }
+.featured-meta .blog-dot { width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,.4); }
+
+/* ── BLOG GRID ───────────────────────────────────────── */
+.blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.blog-card {
+  background: var(--white); border: 1px solid var(--border); border-radius: 14px;
+  overflow: hidden; transition: all .18s; cursor: pointer;
+  display: flex; flex-direction: column; text-decoration: none;
+}
+.blog-card:hover { border-color: var(--orange-dim); box-shadow: 0 12px 40px -14px rgba(233,84,32,.22); transform: translateY(-3px); }
+.blog-thumb {
+  height: 150px; position: relative; overflow: hidden;
+  background: var(--maroon);
+  display: flex; align-items: center; justify-content: center;
+}
+.blog-thumb::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(135deg, rgba(255,255,255,.04) 0 10px, transparent 10px 20px),
+    radial-gradient(120% 120% at 80% 10%, rgba(233,84,32,.4), transparent 55%);
+}
+.blog-thumb .glyph {
+  position: relative; z-index: 1; font-family: var(--mono);
+  font-size: 34px; font-weight: 700; color: rgba(255,255,255,.9);
+  letter-spacing: -1px;
+}
+.blog-thumb .glyph .br { color: var(--orange); }
+.blog-body { padding: 22px; display: flex; flex-direction: column; gap: 11px; flex: 1; }
+.blog-meta { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 11px; color: var(--ink3); }
+.blog-tag {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--orange);
+  background: var(--orange-bg); padding: 3px 9px; border-radius: 5px;
+}
+.blog-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--ink3); }
+.blog-card-title { font-size: 18px; font-weight: 700; letter-spacing: -.4px; color: var(--ink); line-height: 1.25; }
+.blog-excerpt { font-size: 13.5px; line-height: 1.6; color: var(--ink2); flex: 1; }
+.blog-readmore { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--orange); display: flex; align-items: center; gap: 6px; }
+
+/* ── NEWSLETTER ──────────────────────────────────────── */
+.news {
+  position: relative; border-radius: 18px; overflow: hidden;
+  background: var(--maroon); padding: 44px 48px;
+  display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;
+}
+.news::before { content: ''; position: absolute; inset: 0; background: radial-gradient(120% 130% at 90% 0%, rgba(233,84,32,.3), transparent 55%); }
+.news > * { position: relative; z-index: 1; }
+.news-title { font-size: 26px; font-weight: 700; letter-spacing: -.6px; color: #fff; margin-bottom: 8px; }
+.news-desc { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,.6); max-width: 400px; }
+.news-form { display: flex; gap: 10px; flex-wrap: wrap; }
+.news-input {
+  font-family: var(--font); font-size: 14px; padding: 12px 16px; border-radius: 9px;
+  border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06);
+  color: #fff; min-width: 240px;
+}
+.news-input::placeholder { color: rgba(255,255,255,.4); }
+.news-input:focus { outline: none; border-color: var(--orange); }
+
+/* ── FOOTER ──────────────────────────────────────────── */
+.footer { padding: 28px var(--pad); border-top: 1px solid var(--border); }
+.footer-inner {
+  max-width: var(--max); margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+}
+.footer-logo { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--ink); }
+.footer-logo .b { color: var(--orange); }
+.footer-text { font-family: var(--mono); font-size: 11.5px; color: var(--ink3); text-align: right; line-height: 1.6; }
+.footer-text .heart { color: var(--orange); }
+
+@media (max-width: 900px) {
+  :root { --pad: 24px; }
+  .nav-links { display: none; }
+  .blog-grid { grid-template-columns: 1fr; }
+  .featured { grid-template-columns: 1fr; }
+  .featured-art { min-height: 200px; }
+  .featured-body { padding: 32px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="itshamid-v5.html"><span class="b">&lt;</span>Hamid<span class="b">/&gt;</span></a>
+    <div class="nav-links">
+      <a class="nav-link" href="itshamid-v5.html">Home</a>
+      <a class="nav-link" href="itshamid-v5.html#rasa">Rasa Money</a>
+      <a class="nav-link" href="itshamid-v5.html#experience">Experience</a>
+      <a class="nav-link" href="Projects.html">Projects</a>
+      <a class="nav-link active" href="Blog.html">Blog</a>
+      <a class="nav-link" href="itshamid-v5.html#contact">Contact</a>
+    </div>
+    <div class="nav-right">
+      <div class="status"><span class="dot"></span> Available</div>
+      <a class="nav-cta" href="itshamid-v5.html#contact">Get in touch</a>
+    </div>
+  </div>
+</nav>
+
+<section class="band blog-hero" data-screen-label="Blog · hero">
+  <div class="inner">
+    <div class="section-label">Writing</div>
+    <h2 class="section-title">Notes on <em>frontend</em>, testing<br>&amp; building things.</h2>
+    <p class="blog-hero-desc">Field notes from a decade of shipping interfaces at scale — micro-frontend architecture, testing strategy, developer tooling, and the occasional founder diary from building Rasa Money.</p>
+  </div>
+</section>
+
+<section class="band" style="padding-top:12px;" data-screen-label="Blog · list">
+  <div class="inner">
+
+    <div class="filter-bar">
+      <button class="filter-btn active">All posts</button>
+      <button class="filter-btn">Architecture</button>
+      <button class="filter-btn">Testing</button>
+      <button class="filter-btn">React</button>
+      <button class="filter-btn">Founder</button>
+      <button class="filter-btn">Tooling</button>
+    </div>
+
+    <!-- Featured -->
+    <a class="featured" href="BlogPost.html" style="margin-top:28px;">
+      <div class="featured-art"><span class="glyph"><span class="br">&lt;</span>mfe<span class="br">/&gt;</span></span></div>
+      <div class="featured-body">
+        <div class="featured-kicker">Featured · Architecture</div>
+        <div class="featured-title">Micro-frontends without the chaos</div>
+        <div class="featured-excerpt">Splitting a monolith into independently deployable frontends sounds clean on a whiteboard. Here's what actually held up in production — the boundaries, the shared contracts, and the mistakes I'd undo.</div>
+        <div class="featured-meta"><span>Jun 14, 2026</span><span class="blog-dot"></span><span>8 min read</span><span class="blog-dot"></span><span>Hamid Yaftian</span></div>
+      </div>
+    </a>
+
+    <!-- Grid -->
+    <div class="blog-grid">
+      <a class="blog-card" href="BlogPost.html">
+        <div class="blog-thumb"><span class="glyph"><span class="br">{</span>test<span class="br">}</span></span></div>
+        <div class="blog-body">
+          <div class="blog-meta"><span class="blog-tag">Testing</span><span class="blog-dot"></span><span>May 28, 2026</span><span class="blog-dot"></span><span>6 min</span></div>
+          <div class="blog-card-title">From 20% to 70% test coverage</div>
+          <div class="blog-excerpt">A pragmatic Jest strategy for teams who inherited an untested codebase — what to test first, what to skip, and how to keep it green.</div>
+          <div class="blog-readmore">Read post <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        </div>
+      </a>
+      <a class="blog-card" href="BlogPost.html">
+        <div class="blog-thumb"><span class="glyph"><span class="br">$</span> ship</span></div>
+        <div class="blog-body">
+          <div class="blog-meta"><span class="blog-tag">Founder</span><span class="blog-dot"></span><span>Apr 30, 2026</span><span class="blog-dot"></span><span>5 min</span></div>
+          <div class="blog-card-title">Building Rasa Money solo, week one</div>
+          <div class="blog-excerpt">The stack, the trade-offs, and the uncomfortable decisions you make when you're both the CTO and the entire engineering team.</div>
+          <div class="blog-readmore">Read post <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        </div>
+      </a>
+      <a class="blog-card" href="BlogPost.html">
+        <div class="blog-thumb"><span class="glyph"><span class="br">&lt;</span>hook<span class="br">/&gt;</span></span></div>
+        <div class="blog-body">
+          <div class="blog-meta"><span class="blog-tag">React</span><span class="blog-dot"></span><span>Apr 09, 2026</span><span class="blog-dot"></span><span>7 min</span></div>
+          <div class="blog-card-title">Custom hooks that earn their keep</div>
+          <div class="blog-excerpt">Not every bit of logic deserves a hook. A field guide to the abstractions that reduce cognitive load instead of hiding it.</div>
+          <div class="blog-readmore">Read post <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        </div>
+      </a>
+      <a class="blog-card" href="BlogPost.html">
+        <div class="blog-thumb"><span class="glyph"><span class="br">$</span> cli</span></div>
+        <div class="blog-body">
+          <div class="blog-meta"><span class="blog-tag">Tooling</span><span class="blog-dot"></span><span>Mar 22, 2026</span><span class="blog-dot"></span><span>6 min</span></div>
+          <div class="blog-card-title">Scaffolding as a team sport</div>
+          <div class="blog-excerpt">Why we built a CLI to standardize project setup across twelve teams — and how it quietly paid for itself in a month.</div>
+          <div class="blog-readmore">Read post <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        </div>
+      </a>
+      <a class="blog-card" href="BlogPost.html">
+        <div class="blog-thumb"><span class="glyph"><span class="br">[</span>ds<span class="br">]</span></span></div>
+        <div class="blog-body">
+          <div class="blog-meta"><span class="blog-tag">Architecture</span><span class="blog-dot"></span><span>Mar 05, 2026</span><span class="blog-dot"></span><span>9 min</span></div>
+          <div class="blog-card-title">A design system three teams actually use</div>
+          <div class="blog-excerpt">Adoption is a design problem, not a component problem. What changed when we stopped shipping components and started shipping decisions.</div>
+          <div class="blog-readmore">Read post <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        </div>
+      </a>
+      <a class="blog-card" href="BlogPost.html">
+        <div class="blog-thumb"><span class="glyph">TS</span></div>
+        <div class="blog-body">
+          <div class="blog-meta"><span class="blog-tag">Tooling</span><span class="blog-dot"></span><span>Feb 18, 2026</span><span class="blog-dot"></span><span>7 min</span></div>
+          <div class="blog-card-title">Migrating 200k lines to TypeScript</div>
+          <div class="blog-excerpt">A codemod-first approach to a JS→TS migration that didn't freeze feature work for a quarter. The order of operations matters.</div>
+          <div class="blog-readmore">Read post <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Newsletter -->
+    <div class="news" style="margin-top:40px;">
+      <div>
+        <div class="news-title">Get new posts in your inbox</div>
+        <div class="news-desc">Occasional, no spam — frontend architecture, testing and founder notes. Roughly once a month.</div>
+      </div>
+      <form class="news-form" onsubmit="return false;">
+        <input class="news-input" type="email" placeholder="you@example.com" aria-label="Email address">
+        <button class="btn btn-orange" type="submit">Subscribe</button>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <a class="footer-logo" href="itshamid-v5.html"><span class="b">&lt;</span>Hamid<span class="b">/&gt;</span></a>
+    <div class="footer-text">
+      Designed &amp; built with <span class="heart">&hearts;</span> by Hamid Yaftian<br>
+      © 2026 · Inspired by the Ubuntu design language
+    </div>
+  </div>
+</footer>
+
+<div id="tweaks-root"></div>
+<script type="text/babel">
+const { useEffect } = React;
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "#E95420",
+  "bgTone": "warm"
+}/*EDITMODE-END*/;
+
+function Tweaks() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  useEffect(() => {
+    const r = document.documentElement.style;
+    r.setProperty('--orange', t.accent);
+    r.setProperty('--orange-dim', t.accent + 'cc');
+    r.setProperty('--orange-bg', t.accent + '18');
+  }, [t.accent]);
+  useEffect(() => {
+    const r = document.documentElement.style;
+    const tones = {
+      warm:    ['#f7f4ef','#f0ece4','#e6ddd3','#1c0806'],
+      neutral: ['#f7f7f6','#efefed','#e4e3e0','#141414'],
+      cool:    ['#f4f6f8','#eaeef1','#dde3e8','#0c1014'],
+    };
+    const [c1,c2,bd,mr] = tones[t.bgTone] || tones.warm;
+    r.setProperty('--cream', c1); r.setProperty('--cream2', c2);
+    r.setProperty('--border', bd); r.setProperty('--maroon', mr);
+  }, [t.bgTone]);
+  return (
+    <TweaksPanel>
+      <TweakSection label="Theme" />
+      <TweakColor label="Accent" value={t.accent}
+        options={['#E95420','#2A6FDB','#1F8A5B','#7A3FE0']}
+        onChange={v => setTweak('accent', v)} />
+      <TweakRadio label="Background tone" value={t.bgTone}
+        options={['warm','neutral','cool']}
+        onChange={v => setTweak('bgTone', v)} />
+    </TweaksPanel>
+  );
+}
+ReactDOM.createRoot(document.getElementById('tweaks-root')).render(<Tweaks />);
+
+// Simple client-side category filter (visual only)
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

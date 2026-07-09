@@ -1,0 +1,214 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import BlogCard from '../components/BlogCard.astro';
+import { getContent } from '../data/content';
+import { getProjects, getHomeProjects } from '../lib/github';
+import { getCollection } from 'astro:content';
+
+const content = getContent();
+const projects = await getProjects();
+const featuredProjects = getHomeProjects(projects);
+
+const posts = (await getCollection('blog'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const featuredPosts = posts.slice(0, content.blog.homeFeaturedCount);
+---
+
+<BaseLayout activeNav="/">
+  <section class="hero" id="top">
+    <div class="hero-grid">
+      <div class="hero-left">
+        <a class="pill" href={content.hero.pill.href}>
+          {content.hero.pill.text}
+          <span class="pill-arrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </a>
+        <h1 class="hero-title">
+          {content.hero.title[0]}<br><em>{content.hero.title[1]}</em> {content.hero.title[2]}<span class="cursor">_</span>
+        </h1>
+        <p class="hero-bio" set:html={content.hero.bio} />
+        <div class="hero-actions">
+          {content.hero.actions.map((action) => (
+            <a class:list={['btn', action.variant === 'orange' ? 'btn-orange' : 'btn-ghost']} href={action.href}>
+              {action.label}
+            </a>
+          ))}
+        </div>
+        <div class="hero-tags">
+          {content.hero.tags.map((tag) => <span class="chip">{tag}</span>)}
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="terminal">
+          <div class="term-bar">
+            <span class="term-dot" style="background:#ff5f57"></span>
+            <span class="term-dot" style="background:#febc2e"></span>
+            <span class="term-dot" style="background:#28c840"></span>
+            <span class="term-title">{content.hero.terminal.title}</span>
+          </div>
+          <div class="term-body">
+            <div class="cmd"><span class="prompt">$</span> cat profile.json</div>
+            <div class="json">{'{'}</div>
+            <div class="json">&nbsp;&nbsp;<span class="k">"role"</span>: <span class="v">"{content.hero.terminal.profile.role}"</span>,</div>
+            <div class="json">&nbsp;&nbsp;<span class="k">"building"</span>: <span class="v">"{content.hero.terminal.profile.building}"</span>,</div>
+            <div class="json">&nbsp;&nbsp;<span class="k">"experience"</span>: <span class="v">"{content.hero.terminal.profile.experience}"</span>,</div>
+            <div class="json">&nbsp;&nbsp;<span class="k">"stack"</span>: [{content.hero.terminal.profile.stack.map((s) => `<span class="v">"${s}"</span>`).join(', ')}],</div>
+            <div class="json">&nbsp;&nbsp;<span class="k">"focus"</span>: <span class="v">"{content.hero.terminal.profile.focus}"</span></div>
+            <div class="json">{'}'}</div>
+            <div class="run"><span class="prompt">$</span> ./run.sh<span class="term-cursor"></span></div>
+          </div>
+        </div>
+        <div class="hero-stats">
+          {content.hero.stats.map((stat) => (
+            <div class="stat">
+              <div class="stat-num">{stat.value}<em>{stat.suffix}</em></div>
+              <div class="stat-label">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="rasa" style="padding-top:24px;">
+    <div class="inner">
+      <div class="maroon-band">
+        <div class="maroon-label">{content.rasa.label}</div>
+        <div class="rasa-head">
+          <div>
+            <div class="rasa-title">{content.rasa.title[0]} <em>{content.rasa.title[1]}</em></div>
+          </div>
+          <div class="rasa-badges">
+            {content.rasa.badges.map((badge) => (
+              <span class:list={['badge', badge.variant === 'orange' && 'badge-orange']}>{badge.text}</span>
+            ))}
+          </div>
+        </div>
+        <p class="rasa-desc">{content.rasa.description}</p>
+        <div class="feature-grid">
+          {content.rasa.features.map((feature) => (
+            <div class="feature-card">
+              <div class="feature-name"><span class="fi">◆</span> {feature.name}</div>
+              <div class="feature-desc">{feature.description}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="experience" style="padding-top:40px;">
+    <div class="inner">
+      <div class="section-label">{content.experience.label}</div>
+      <div class="section-header tight">
+        <h2 class="section-title">{content.experience.title[0]} <em>{content.experience.title[1]}</em></h2>
+        <a class="btn btn-ghost" href={content.experience.resumeLink.href}>
+          {content.experience.resumeLink.label}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <div class="exp-grid">
+        <div class="timeline">
+          {content.experience.timeline.map((item) => (
+            <div class:list={['tl-item', item.current && 'now']}>
+              <div class="tl-period">{item.period}</div>
+              <div class="tl-role">{item.role}</div>
+              <div class="tl-company"><strong>{item.company}</strong> · {item.location}</div>
+              <ul class="tl-list">
+                {item.highlights.map((h) => <li>{h}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <aside class="exp-side">
+          {content.experience.sidebar.map((card) => (
+            <div class="side-card">
+              <div class="side-title"><span class="si">◆</span> {card.title}</div>
+              {card.type === 'chips' ? (
+                <div class="side-chips">
+                  {card.items.map((item) => <span class="chip">{item}</span>)}
+                </div>
+              ) : (
+                card.items.map((item) => (
+                  <div class="side-cert"><span class="ci">●</span> {item}</div>
+                ))
+              )}
+            </div>
+          ))}
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="projects" style="padding-top:24px;">
+    <div class="inner">
+      <div class="section-label">{content.projects.label}</div>
+      <div class="section-header">
+        <h2 class="section-title">{content.projects.title[0]} <em>{content.projects.title[1]}</em></h2>
+        <a class="btn btn-ghost" href={content.projects.allLink.href}>
+          {content.projects.allLink.label}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <div class="proj-grid">
+        {featuredProjects.map((project) => <ProjectCard project={project} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="blog" style="padding-top:24px;">
+    <div class="inner">
+      <div class="section-label">{content.blog.label}</div>
+      <div class="section-header">
+        <h2 class="section-title">{content.blog.title[0]} <em>{content.blog.title[1]}</em></h2>
+        <a class="btn btn-ghost" href={content.blog.allLink.href}>
+          {content.blog.allLink.label}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <div class="blog-grid">
+        {featuredPosts.map((post) => <BlogCard post={post} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="contact" style="padding-top:40px; padding-bottom:56px;">
+    <div class="inner">
+      <div class="maroon-band">
+        <div class="maroon-label">{content.contact.label}</div>
+        <div class="contact-grid">
+          <div>
+            <h2 class="contact-title">Let's build scalable<br><em>{content.contact.title[1]}</em> together.</h2>
+            <p class="contact-desc">{content.contact.description}</p>
+            <div class="info-panel">
+              {content.contact.info.map((item) => (
+                <div class="info-item">
+                  <div class="info-label">{item.label}</div>
+                  <div class="info-value">
+                    {item.status && <span class="idot"></span>}
+                    {item.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div class="contact-links">
+            {content.contact.links.map((link) => (
+              <a class:list={['contact-link', link.wide && 'wide']} href={link.href} target={link.href.startsWith('http') ? '_blank' : undefined} rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}>
+                <span class="cl-i">@</span>
+                <span class="cl-txt">
+                  <span class="cl-platform">{link.platform}</span>
+                  <span class="cl-handle">{link.handle}</span>
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

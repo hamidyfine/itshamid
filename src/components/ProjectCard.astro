@@ -1,0 +1,33 @@
+---
+import type { ProjectCard } from '../lib/github';
+import IconGitHub from './icons/IconGitHub.astro';
+import IconLink from './icons/IconLink.astro';
+import IconPackage from './icons/IconPackage.astro';
+
+interface Props {
+  project: ProjectCard;
+}
+
+const { project } = Astro.props;
+const classes = ['proj-card'];
+if (project.wide) classes.push('wide');
+if (project.maroon) classes.push('maroon');
+---
+
+<a class:list={classes} href={project.url} target="_blank" rel="noopener noreferrer">
+  <div class="proj-top">
+    <div class="proj-name"><span class="br">[</span>{project.name}<span class="br">]</span></div>
+    <span class="proj-icon">
+      {project.source === 'github' ? <IconGitHub /> : project.maroon ? <IconLink /> : <IconPackage />}
+    </span>
+  </div>
+  <div class="proj-desc">{project.description}</div>
+  {project.tags.length > 0 && (
+    <div class="proj-meta">
+      <div class="proj-tags">
+        {project.tags.map((tag) => <span class="chip">{tag}</span>)}
+      </div>
+    </div>
+  )}
+  {project.note && <div class="proj-note">{project.note}</div>}
+</a>

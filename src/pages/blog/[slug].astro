@@ -49,7 +49,7 @@ const modifiedTime = (post.data.updatedDate ?? post.data.pubDate).toISOString();
   <article>
     <header class="article-head">
       <div class="crumb">
-        <a href="/blog">← Blog</a>
+        <a href="/blog">{content.blog.post.backLink}</a>
         <span>/</span>
         <span>{post.data.tags[0]}</span>
       </div>
@@ -65,7 +65,7 @@ const modifiedTime = (post.data.updatedDate ?? post.data.pubDate).toISOString();
           <div class="byline-meta">
             <span>{formatDate(post.data.pubDate)}</span>
             <span class="blog-dot"></span>
-            <span>{post.data.readTime ?? 5} min read</span>
+            <span>{post.data.readTime ?? 5} {content.blog.minRead}</span>
           </div>
         </div>
       </div>
@@ -91,8 +91,8 @@ const modifiedTime = (post.data.updatedDate ?? post.data.pubDate).toISOString();
         <div class="ac-name">{content.site.author}</div>
         <div class="ac-bio">{content.blog.authorBio}</div>
         <div class="ac-links">
-          <a class="btn btn-ghost" href="/#contact" style="padding:8px 16px; font-size:13px;">Get in touch</a>
-          <a class="btn btn-ghost" href="/blog" style="padding:8px 16px; font-size:13px;">More posts</a>
+          <a class="btn btn-ghost" href="/#contact" style="padding:8px 16px; font-size:13px;">{content.nav.cta.label}</a>
+          <a class="btn btn-ghost" href="/blog" style="padding:8px 16px; font-size:13px;">{content.blog.post.morePosts}</a>
         </div>
       </div>
     </div>
@@ -102,13 +102,13 @@ const modifiedTime = (post.data.updatedDate ?? post.data.pubDate).toISOString();
     <nav class="morenav">
       {prev ? (
         <a class="prev" href={`/blog/${prev.id}`}>
-          <span class="mn-dir">← Previous</span>
+          <span class="mn-dir">{content.blog.post.previous}</span>
           <span class="mn-title">{prev.data.title}</span>
         </a>
       ) : <div />}
       {next ? (
         <a class="next" href={`/blog/${next.id}`}>
-          <span class="mn-dir">Next →</span>
+          <span class="mn-dir">{content.blog.post.next}</span>
           <span class="mn-title">{next.data.title}</span>
         </a>
       ) : <div />}
@@ -117,7 +117,7 @@ const modifiedTime = (post.data.updatedDate ?? post.data.pubDate).toISOString();
 
   {related.length > 0 && (
     <section class="related-wrap">
-      <div class="related-head">Keep reading</div>
+      <div class="related-head">{content.blog.post.keepReading}</div>
       <div class="blog-grid">
         {related.map((p) => <BlogCard post={p} />)}
       </div>

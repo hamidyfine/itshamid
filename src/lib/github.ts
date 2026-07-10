@@ -1,44 +1,76 @@
+import { getContent } from '../data/content';
 import {
+  getCategoryMap,
+  getListedRepoNames,
+  getManualProjects,
   getProjectsConfig,
-  normalizeRepoConfigs,
-  type ProjectsConfig,
+  sortProjectsByConfigOrder,
 } from '../data/projects';
+import type { GitHubRepo, ProjectCard, ProjectsConfig } from '../types';
 
-export interface GitHubRepo {
-  id: number;
-  name: string;
-  full_name: string;
-  html_url: string;
-  description: string | null;
-  homepage: string | null;
-  stargazers_count: number;
-  language: string | null;
-  topics: string[];
-  fork: boolean;
-  archived: boolean;
-  npm?: boolean;
+const GITHUB_API_VERSION = '2022-11-28';
+
+function getGitHubToken(): string | undefined {
+  const token = import.meta.env.GITHUB_TOKEN?.trim();
+  return token || undefined;
 }
 
-export interface ProjectCard {
-  name: string;
-  description: string;
-  url: string;
-  tags: string[];
-  note?: string;
-  stars?: number;
-  language?: string | null;
-  wide?: boolean;
-  maroon?: boolean;
-  category?: string;
-  showOnHome?: boolean;
-  source: 'github' | 'flagship' | 'override';
+function getGitHubHeaders(): HeadersInit {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'itshamid-portfolio',
+    'X-GitHub-Api-Version': GITHUB_API_VERSION,
+  };
+
+  const token = getGitHubToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
+function logGitHubApiWarning(res: Response, context: string): void {
+  const remaining = res.headers.get('x-ratelimit-remaining');
+  const reset = res.headers.get('x-ratelimit-reset');
+  const authenticated = Boolean(getGitHubToken());
+
+  if (res.status === 403 && !authenticated) {
+    console.warn(
+      `GitHub API rate limit hit (${context}). Set GITHUB_TOKEN in .env for 5,000 requests/hour.`,
+    );
+    return;
+  }
+
+  console.warn(
+    `GitHub API error (${res.status}) for ${context}. Remaining: ${remaining ?? 'unknown'}, reset: ${reset ?? 'unknown'}`,
+  );
+}
+
+async function githubFetch(url: string, context: string): Promise<Response | null> {
+  try {
+    const res = await fetch(url, {
+      headers: getGitHubHeaders(),
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!res.ok) {
+      logGitHubApiWarning(res, context);
+      return null;
+    }
+
+    return res;
+  } catch (error) {
+    console.warn(`GitHub API unavailable for ${context}:`, error);
+    return null;
+  }
 }
 
 function languageToTags(language: string | null, topics: string[]): string[] {
   const tags = new Set<string>();
   if (language) tags.add(language);
-  topics.slice(0, 3).forEach((t) => tags.add(t));
-  return [...tags].slice(0, 4);
+  topics.forEach((topic) => tags.add(topic));
+  return [...tags];
 }
 
 function formatStars(count: number): string {
@@ -46,99 +78,126 @@ function formatStars(count: number): string {
   return `${count}★`;
 }
 
-export async function fetchGitHubRepos(username: string): Promise<GitHubRepo[]> {
-  const url = `https://api.github.com/users/${username}/repos?per_page=100&sort=updated`;
-  const res = await fetch(url, {
-    headers: {
-      Accept: 'application/vnd.github+json',
-      'User-Agent': 'itshamid-portfolio',
-    },
-  });
+async function fetchRepoTopics(username: string, repoName: string): Promise<string[]> {
+  const url = `https://api.github.com/repos/${username}/${repoName}/topics`;
+  const res = await githubFetch(url, `${username}/${repoName} topics`);
+  if (!res) return [];
 
-  if (!res.ok) {
-    console.warn(`GitHub API error (${res.status}) for user ${username}`);
-    return [];
-  }
+  const data: { names?: string[] } = await res.json();
+  return data.names ?? [];
+}
+
+async function fetchTopicsForRepos(
+  username: string,
+  repoNames: string[],
+): Promise<Map<string, string[]>> {
+  const entries = await Promise.all(
+    repoNames.map(async (name) => [name, await fetchRepoTopics(username, name)] as const),
+  );
+
+  return new Map(entries);
+}
+
+export async function fetchGitHubRepos(username: string): Promise<GitHubRepo[]> {
+  const url = `https://api.github.com/users/${username}/repos?per_page=100&sort=pushed`;
+  const res = await githubFetch(url, `user ${username} repos`);
+  if (!res) return [];
 
   return res.json();
+}
+
+function repoToProject(repo: GitHubRepo, category: string): ProjectCard {
+  const isFlagship = category === 'flagship';
+  const { projects: projectContent } = getContent();
+
+  return {
+    name: repo.name,
+    description: repo.description ?? projectContent.fallbackDescription,
+    url: repo.html_url,
+    homepage: repo.homepage || undefined,
+    tags: languageToTags(repo.language, repo.topics),
+    note: repo.stargazers_count > 0 ? formatStars(repo.stargazers_count) : undefined,
+    stars: repo.stargazers_count,
+    language: repo.language,
+    category,
+    updatedAt: repo.pushed_at,
+    wide: isFlagship,
+    maroon: isFlagship,
+    source: 'github',
+  };
 }
 
 export function mapReposToProjects(
   repos: GitHubRepo[],
   config: ProjectsConfig,
 ): ProjectCard[] {
-  const excludeForks = config.excludeForks ?? true;
-  const excludeArchived = config.excludeArchived ?? true;
-  const repoMap = new Map(repos.map((repo) => [repo.name, repo]));
-  const repoConfigs = normalizeRepoConfigs(config.repos);
+  const categoryMap = getCategoryMap(config);
+  const listedNames = new Set(getListedRepoNames(config));
+  const repoMap = new Map(
+    repos.filter((repo) => listedNames.has(repo.name)).map((repo) => [repo.name, repo]),
+  );
 
-  return repoConfigs.flatMap((repoConfig) => {
-    const repo = repoMap.get(repoConfig.name);
+  return getListedRepoNames(config).flatMap((name) => {
+    const category = categoryMap.get(name);
+    if (!category) return [];
+
+    const repo = repoMap.get(name);
     if (!repo) {
-      console.warn(`GitHub repo not found: ${repoConfig.name}`);
+      console.warn(`GitHub repo not found for configured project: ${name}`);
       return [];
     }
-    if (excludeForks && repo.fork) return [];
-    if (excludeArchived && repo.archived) return [];
 
-    const tags = repoConfig.tags ?? languageToTags(repo.language, repo.topics);
-    const note =
-      repoConfig.note ??
-      (repo.stargazers_count > 0 ? formatStars(repo.stargazers_count) : undefined);
-
-    return [{
-      name: repo.name,
-      description: repoConfig.description ?? repo.description ?? 'No description provided.',
-      url: repo.homepage || repo.html_url,
-      tags,
-      note,
-      stars: repo.stargazers_count,
-      language: repo.language,
-      category: repoConfig.category ?? 'tools',
-      showOnHome: repoConfig.showOnHome,
-      source: 'github' as const,
-    }];
+    return [repoToProject(repo, category)];
   });
 }
 
-export function getFlagshipProject(flagship: ProjectsConfig['flagship']): ProjectCard | null {
-  if (!flagship) return null;
-  return {
-    name: flagship.name,
-    description: flagship.description,
-    url: flagship.url,
-    tags: flagship.tags,
-    note: flagship.note,
-    wide: flagship.wide,
-    maroon: flagship.maroon,
-    category: 'flagship',
-    source: 'flagship',
-  };
+function sortByUpdatedAt(projects: ProjectCard[]): ProjectCard[] {
+  return [...projects].sort(
+    (a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
+  );
 }
 
 export async function getProjects(): Promise<ProjectCard[]> {
   const config = getProjectsConfig();
-  const repos = await fetchGitHubRepos(config.username);
-  const githubProjects = mapReposToProjects(repos, config);
-  const flagship = getFlagshipProject(config.flagship);
+  const listedNames = getListedRepoNames(config);
+  const [repos, topicsMap] = await Promise.all([
+    fetchGitHubRepos(config.username),
+    fetchTopicsForRepos(config.username, listedNames),
+  ]);
 
-  const projects: ProjectCard[] = [];
-  if (flagship) projects.push(flagship);
-  projects.push(...githubProjects);
+  const reposWithTopics = repos.map((repo) => ({
+    ...repo,
+    topics: topicsMap.get(repo.name) ?? repo.topics ?? [],
+  }));
 
-  return projects;
+  return [...getManualProjects(config), ...mapReposToProjects(reposWithTopics, config)];
 }
 
-export function getHomeProjects(projects: ProjectCard[]): ProjectCard[] {
-  return projects.filter((project) => project.source !== 'flagship' && project.showOnHome);
+export function getHomeProjects(
+  projects: ProjectCard[],
+  featured: string[] = [],
+): ProjectCard[] {
+  const featuredSet = new Set(featured);
+  return sortByUpdatedAt(projects.filter((project) => featuredSet.has(project.name)));
 }
 
 export function groupProjectsByCategory(
   projects: ProjectCard[],
   categories: { id: string; label: string }[],
+  config: ProjectsConfig = getProjectsConfig(),
 ): { id: string; label: string; projects: ProjectCard[] }[] {
+  const categoryOrder: Record<string, string[]> = {
+    flagship: config.flagship,
+    tools: config.tools,
+    misc: config.misc,
+    npm: config.npm,
+  };
+
   return categories.map((cat) => ({
     ...cat,
-    projects: projects.filter((p) => p.category === cat.id),
+    projects: sortProjectsByConfigOrder(
+      projects.filter((p) => p.category === cat.id),
+      categoryOrder[cat.id] ?? [],
+    ),
   }));
 }

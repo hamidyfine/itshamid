@@ -1,25 +1,54 @@
 ---
-import type { ProjectCard } from '../lib/github';
+import type { ProjectCard } from '../types';
+import { formatTemplate, getContent } from '../data/content';
 import IconGitHub from './icons/IconGitHub.astro';
 import IconLink from './icons/IconLink.astro';
-import IconPackage from './icons/IconPackage.astro';
 
 interface Props {
   project: ProjectCard;
+  showStars?: boolean;
 }
 
-const { project } = Astro.props;
+const { project, showStars = false } = Astro.props;
+const content = getContent();
 const classes = ['proj-card'];
 if (project.wide) classes.push('wide');
 if (project.maroon) classes.push('maroon');
+
+const showGitHubLink = project.source === 'github';
+const externalLink = project.homepage || (project.source === 'manual' ? project.url : undefined);
+const showExternalLink = Boolean(externalLink) && (!showGitHubLink || externalLink !== project.url);
 ---
 
-<a class:list={classes} href={project.url} target="_blank" rel="noopener noreferrer">
+<div class:list={classes}>
   <div class="proj-top">
     <div class="proj-name"><span class="br">[</span>{project.name}<span class="br">]</span></div>
-    <span class="proj-icon">
-      {project.source === 'github' ? <IconGitHub /> : project.maroon ? <IconLink /> : <IconPackage />}
-    </span>
+    {(showGitHubLink || showExternalLink) && (
+      <div class="proj-links">
+        {showGitHubLink && (
+          <a
+            class="proj-card-link"
+            href={project.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={formatTemplate(content.projects.ariaLabels.viewOnGitHub, { name: project.name })}
+          >
+            <IconGitHub />
+          </a>
+        )}
+        {showExternalLink && (
+          <a
+            class="proj-card-link"
+            href={externalLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={formatTemplate(content.projects.ariaLabels.visit, { name: project.name })}
+          >
+            <IconLink />
+          </a>
+        )}
+      </div>
+    )}
   </div>
   <div class="proj-desc">{project.description}</div>
   {project.tags.length > 0 && (
@@ -29,5 +58,5 @@ if (project.maroon) classes.push('maroon');
       </div>
     </div>
   )}
-  {project.note && <div class="proj-note">{project.note}</div>}
-</a>
+  {showStars && project.note && <div class="proj-note">{project.note}</div>}
+</div>

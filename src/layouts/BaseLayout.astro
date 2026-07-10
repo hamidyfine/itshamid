@@ -1,7 +1,9 @@
 ---
 import { theme } from '../config/theme';
 import { getContent } from '../data/content';
-import { buildSeo, type SeoProps } from '../lib/seo';
+import { buildSeo } from '../lib/seo';
+import ContactPanel from '../components/ContactPanel.astro';
+import type { SeoProps } from '../types';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import '../styles/global.css';
@@ -49,7 +51,12 @@ const tone = theme.tones[theme.activeTone];
     <meta name="twitter:description" content={seo.description} />
     <meta name="twitter:image" content={seo.image} />
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content={content.site.shortName} />
+    <link rel="manifest" href="/favicon/site.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href={theme.fonts.googleUrl} rel="stylesheet" />
@@ -79,6 +86,36 @@ const tone = theme.tones[theme.activeTone];
   <body class={bodyClass}>
     <Nav active={activeNav} />
     <slot />
+    
+    <section class="band" id="contact" style="padding-top:40px; padding-bottom:56px;">
+      <div class="inner">
+        <div class="maroon-band">
+          <!-- <div class="maroon-label">{content.contact.label}</div> -->
+          <div class="contact-grid">
+            <div>
+              <h2 class="contact-title">{content.contact.title[0]} <em>{content.contact.title[1]}</em> {content.contact.title[2]}</h2>
+              <!-- <p class="contact-desc">{content.contact.description}</p> -->
+              <!-- <div class="info-panel">
+                {content.contact.info.map((item) => (
+                  <div class="info-item">
+                    <div class="info-label">{item.label}</div>
+                    <div class="info-value">
+                      {item.status && <span class="idot"></span>}
+                      {item.value}
+                    </div>
+                  </div>
+                ))}
+              </div> -->
+            </div>
+            <ContactPanel
+              scheduleMeeting={content.contact.scheduleMeeting}
+              links={content.contact.links}
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
     <Footer />
   </body>
 </html>

@@ -3,12 +3,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import BlogCard from '../components/BlogCard.astro';
 import { getContent } from '../data/content';
+import { getProjectsConfig } from '../data/projects';
 import { getProjects, getHomeProjects } from '../lib/github';
 import { getCollection } from 'astro:content';
 
 const content = getContent();
+const projectsConfig = getProjectsConfig();
 const projects = await getProjects();
-const featuredProjects = getHomeProjects(projects);
+const featuredProjects = getHomeProjects(projects, projectsConfig.featured);
 
 const posts = (await getCollection('blog'))
   .filter((p) => !p.data.draft)
@@ -27,19 +29,19 @@ const featuredPosts = posts.slice(0, content.blog.homeFeaturedCount);
           </span>
         </a>
         <h1 class="hero-title">
-          {content.hero.title[0]}<br><em>{content.hero.title[1]}</em> {content.hero.title[2]}<span class="cursor">_</span>
+          <em>{content.hero.title[1]}</em> {content.hero.title[2]}
         </h1>
         <p class="hero-bio" set:html={content.hero.bio} />
-        <div class="hero-actions">
+        <!-- <div class="hero-actions">
           {content.hero.actions.map((action) => (
             <a class:list={['btn', action.variant === 'orange' ? 'btn-orange' : 'btn-ghost']} href={action.href}>
               {action.label}
             </a>
           ))}
-        </div>
-        <div class="hero-tags">
+        </div> -->
+        <!-- <div class="hero-tags">
           {content.hero.tags.map((tag) => <span class="chip">{tag}</span>)}
-        </div>
+        </div> -->
       </div>
 
       <div class="hero-right">
@@ -51,25 +53,34 @@ const featuredPosts = posts.slice(0, content.blog.homeFeaturedCount);
             <span class="term-title">{content.hero.terminal.title}</span>
           </div>
           <div class="term-body">
-            <div class="cmd"><span class="prompt">$</span> cat profile.json</div>
+            <div class="cmd"><span class="prompt">$</span> {content.hero.terminal.commands.profile}</div>
             <div class="json">{'{'}</div>
             <div class="json">&nbsp;&nbsp;<span class="k">"role"</span>: <span class="v">"{content.hero.terminal.profile.role}"</span>,</div>
             <div class="json">&nbsp;&nbsp;<span class="k">"building"</span>: <span class="v">"{content.hero.terminal.profile.building}"</span>,</div>
             <div class="json">&nbsp;&nbsp;<span class="k">"experience"</span>: <span class="v">"{content.hero.terminal.profile.experience}"</span>,</div>
-            <div class="json">&nbsp;&nbsp;<span class="k">"stack"</span>: [{content.hero.terminal.profile.stack.map((s) => `<span class="v">"${s}"</span>`).join(', ')}],</div>
+            <div class="json">
+              &nbsp;&nbsp;<span class="k">"stack"</span>: [
+              {content.hero.terminal.profile.stack.map((s, i) => (
+                <>
+                  {i > 0 && ', '}
+                  <span class="v">"{s}"</span>
+                </>
+              ))}
+              ],
+            </div>
             <div class="json">&nbsp;&nbsp;<span class="k">"focus"</span>: <span class="v">"{content.hero.terminal.profile.focus}"</span></div>
             <div class="json">{'}'}</div>
-            <div class="run"><span class="prompt">$</span> ./run.sh<span class="term-cursor"></span></div>
+            <div class="run"><span class="prompt">$</span> {content.hero.terminal.commands.run}<span class="term-cursor"></span></div>
           </div>
         </div>
-        <div class="hero-stats">
+        <!-- <div class="hero-stats">
           {content.hero.stats.map((stat) => (
             <div class="stat">
               <div class="stat-num">{stat.value}<em>{stat.suffix}</em></div>
               <div class="stat-label">{stat.label}</div>
             </div>
           ))}
-        </div>
+        </div> -->
       </div>
     </div>
   </section>
@@ -115,16 +126,23 @@ const featuredPosts = posts.slice(0, content.blog.homeFeaturedCount);
         <div class="timeline">
           {content.experience.timeline.map((item) => (
             <div class:list={['tl-item', item.current && 'now']}>
-              <div class="tl-period">{item.period}</div>
-              <div class="tl-role">{item.role}</div>
-              <div class="tl-company"><strong>{item.company}</strong> · {item.location}</div>
+              <div class="tl-head">
+                <div class="tl-head-main">
+                  <div class="tl-role">{item.role}</div>
+                  <div class="tl-company"><strong>{item.company}</strong></div>
+                </div>
+                <div class="tl-head-meta">
+                  <div class="tl-period">{item.period}</div>
+                  <div class="tl-location">{item.location}</div>
+                </div>
+              </div>
               <ul class="tl-list">
                 {item.highlights.map((h) => <li>{h}</li>)}
               </ul>
             </div>
           ))}
         </div>
-        <aside class="exp-side">
+        <!-- <aside class="exp-side">
           {content.experience.sidebar.map((card) => (
             <div class="side-card">
               <div class="side-title"><span class="si">◆</span> {card.title}</div>
@@ -139,7 +157,7 @@ const featuredPosts = posts.slice(0, content.blog.homeFeaturedCount);
               )}
             </div>
           ))}
-        </aside>
+        </aside> -->
       </div>
     </div>
   </section>
@@ -172,42 +190,6 @@ const featuredPosts = posts.slice(0, content.blog.homeFeaturedCount);
       </div>
       <div class="blog-grid">
         {featuredPosts.map((post) => <BlogCard post={post} />)}
-      </div>
-    </div>
-  </section>
-
-  <section class="band" id="contact" style="padding-top:40px; padding-bottom:56px;">
-    <div class="inner">
-      <div class="maroon-band">
-        <div class="maroon-label">{content.contact.label}</div>
-        <div class="contact-grid">
-          <div>
-            <h2 class="contact-title">Let's build scalable<br><em>{content.contact.title[1]}</em> together.</h2>
-            <p class="contact-desc">{content.contact.description}</p>
-            <div class="info-panel">
-              {content.contact.info.map((item) => (
-                <div class="info-item">
-                  <div class="info-label">{item.label}</div>
-                  <div class="info-value">
-                    {item.status && <span class="idot"></span>}
-                    {item.value}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div class="contact-links">
-            {content.contact.links.map((link) => (
-              <a class:list={['contact-link', link.wide && 'wide']} href={link.href} target={link.href.startsWith('http') ? '_blank' : undefined} rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}>
-                <span class="cl-i">@</span>
-                <span class="cl-txt">
-                  <span class="cl-platform">{link.platform}</span>
-                  <span class="cl-handle">{link.handle}</span>
-                </span>
-              </a>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   </section>

@@ -16,7 +16,7 @@ const rest = posts.filter((p) => p.id !== featured?.id);
 
 <BaseLayout
   activeNav="/blog"
-  title="Blog"
+  title={content.blog.seoTitle}
   description={content.blog.pageDescription}
   canonical="/blog"
 >
@@ -32,13 +32,13 @@ const rest = posts.filter((p) => p.id !== featured?.id);
 
   <section class="band" style="padding-top:12px;">
     <div class="inner">
-      <div class="filter-bar" id="blog-filters">
+      <!-- <div class="filter-bar" id="blog-filters">
         {content.blog.filters.map((filter, i) => (
           <button class:list={['filter-btn', i === 0 && 'active']} data-filter={filter === 'All posts' ? 'all' : filter}>
             {filter}
           </button>
         ))}
-      </div>
+      </div> -->
 
       {featured && (
         <a class="featured" href={`/blog/${featured.id}`} style="margin-top:28px;" data-tags={featured.data.tags.join(',')}>
@@ -46,13 +46,13 @@ const rest = posts.filter((p) => p.id !== featured?.id);
             <span class="glyph" set:html={featured.data.glyph ?? featured.data.title.slice(0, 6)} />
           </div>
           <div class="featured-body">
-            <div class="featured-kicker">Featured · {featured.data.tags[0]}</div>
+            <div class="featured-kicker">{content.blog.featuredKicker} · {featured.data.tags[0]}</div>
             <div class="featured-title">{featured.data.title}</div>
             <div class="featured-excerpt">{featured.data.description}</div>
             <div class="featured-meta">
               <span>{formatDate(featured.data.pubDate)}</span>
               <span class="blog-dot"></span>
-              <span>{featured.data.readTime ?? 5} min read</span>
+              <span>{featured.data.readTime ?? 5} {content.blog.minRead}</span>
               <span class="blog-dot"></span>
               <span>{content.site.author}</span>
             </div>
@@ -68,16 +68,16 @@ const rest = posts.filter((p) => p.id !== featured?.id);
         ))}
       </div>
 
-      <div class="news" style="margin-top:40px;">
+      <!-- <div class="news" style="margin-top:40px;">
         <div>
           <div class="news-title">{content.blog.newsletter.title}</div>
           <div class="news-desc">{content.blog.newsletter.description}</div>
         </div>
         <form class="news-form" onsubmit="return false;">
-          <input class="news-input" type="email" placeholder={content.blog.newsletter.placeholder} aria-label="Email address" />
+          <input class="news-input" type="email" placeholder={content.blog.newsletter.placeholder} aria-label={content.blog.emailAriaLabel} />
           <button class="btn btn-orange" type="submit">{content.blog.newsletter.button}</button>
         </form>
-      </div>
+      </div> -->
     </div>
   </section>
 

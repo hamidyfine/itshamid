@@ -11,7 +11,7 @@ const grouped = groupProjectsByCategory(projects, content.projects.categories);
 
 <BaseLayout
   activeNav="/projects"
-  title="Projects"
+  title={content.projects.seoTitle}
   description={content.projects.pageDescription}
   canonical="/projects"
 >
@@ -30,7 +30,9 @@ const grouped = groupProjectsByCategory(projects, content.projects.categories);
           <>
             <div class="cat-label">{group.label}</div>
             <div class="proj-grid" style="margin-bottom:40px;">
-              {group.projects.map((project) => <ProjectCard project={project} />)}
+              {group.projects.map((project) => (
+                <ProjectCard project={project} showStars={false} />
+              ))}
             </div>
           </>
         )

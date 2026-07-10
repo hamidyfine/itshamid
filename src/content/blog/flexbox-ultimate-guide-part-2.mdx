@@ -1,0 +1,130 @@
+---
+title: "A complete guide to Flexbox — Part 2"
+description: "Item properties — order, flex-grow, flex-shrink, flex-basis, and align-self. The second half of a practical Flexbox reference for responsive layouts."
+pubDate: 2023-04-24
+tags: ["CSS", "Layout", "Flexbox"]
+glyph: '<span class="br">flex:</span>1'
+coverCaption: "// flex-grow, flex-shrink, flex-basis — the trilogy that trips everyone up."
+readTime: 8
+featured: false
+draft: false
+---
+
+import Callout from '../../components/mdx/Callout.astro';
+import PullQuote from '../../components/mdx/PullQuote.astro';
+
+In [Part 1](/blog/flexbox-ultimate-guide-part-1) we covered container properties — the rules the parent sets for everyone. Now we flip to **item properties**: the per-child overrides that let one element grow, another shrink, and a third reorder itself without touching the HTML.
+
+If you want to experiment as you read, the [interactive Flexbox playground](https://flexbox-seven.vercel.app/) from part one is still the fastest way to see these properties move.
+
+## Item properties
+
+These go on flex items — direct children of a flex container.
+
+### order
+
+Changes visual order without reordering DOM. Default is `0`; lower values appear first.
+
+```scss
+.item {
+  order: 1;
+}
+```
+
+<Callout>
+**Accessibility caveat.** `order` changes visual sequence only. Screen readers still follow DOM order — don't use `order` to fix a markup problem that should be solved in HTML.
+</Callout>
+
+### flex-grow
+
+Controls how much an item **grows** relative to siblings when free space exists. Default `0` (don't grow).
+
+```scss
+.item-a {
+  flex-grow: 1;
+}
+```
+
+![flex-grow: 1](/blog/flexbox-ultimate-guide/flex-grow-1.jpg)
+
+A value of `2` takes twice the extra space of a sibling with `flex-grow: 1`.
+
+### flex-shrink
+
+Controls how much an item **shrinks** when space is tight. Default `1` (shrink proportionally). Set `0` to prevent shrinking.
+
+```scss
+.item {
+  flex-shrink: 0; // won't shrink below its flex-basis
+}
+```
+
+### flex-basis
+
+Sets the item's initial size along the main axis before grow/shrink kicks in. Default `auto` (use content size).
+
+```scss
+.item {
+  flex-basis: 200px;
+}
+```
+
+**Common values:** length · percentage · `auto` (default) · `min-content` · `max-content` · `fit-content`
+
+### flex
+
+Shorthand for `flex-grow`, `flex-shrink`, and `flex-basis`.
+
+```scss
+.item {
+  flex: 1;           // grow 1, shrink 1, basis 0%
+  flex: 0 1 auto;    // default — don't grow, can shrink, size from content
+  flex: 1 1 200px;   // [grow] [shrink] [basis]
+}
+```
+
+<PullQuote>`flex: 1` is almost never what you think on the first read. It's shorthand for `1 1 0%`, not `1 1 auto`.</PullQuote>
+
+The single-value `flex: 1` pattern is the one you'll use most — it makes items share space equally. But know that it sets `flex-basis` to `0%`, which can collapse content-sized items unexpectedly.
+
+### align-self
+
+Overrides the container's `align-items` for a single item on the cross axis.
+
+```scss
+.container {
+  display: flex;
+  align-items: center;
+}
+
+.item-override {
+  align-self: flex-end;
+}
+```
+
+![align-items: center with align-self override](/blog/flexbox-ultimate-guide/align-items-center.jpg)
+
+**Values:** `auto` (inherit from container) · `stretch` · `flex-start` · `flex-end` · `center` · `baseline`
+
+If the container has `align-content` set and items wrap to multiple lines, `align-self` on individual items can be overridden by the container's line alignment.
+
+## Putting it together
+
+Container properties set the rules of the game. Item properties let individual children bend those rules.
+
+| Goal | Property |
+|------|----------|
+| Equal-width columns | `flex: 1` on each item |
+| Fixed sidebar + fluid main | `flex-shrink: 0` on sidebar, `flex: 1` on main |
+| Reorder on mobile | `order` (with accessible DOM underneath) |
+| Override vertical alignment | `align-self` on one item |
+
+<Callout>
+**Start with defaults.** Most items need nothing beyond `flex: 1` or `flex-shrink: 0`. Add properties only when the layout breaks — not preemptively.
+</Callout>
+
+## Wrapping up
+
+Between [Part 1](/blog/flexbox-ultimate-guide-part-1) (container) and this post (items), you have the full Flexbox property set. The concepts layer cleanly: pick an axis with `flex-direction`, distribute space with `justify-content` and `align-items`, then fine-tune individual children with `flex` and `align-self`.
+
+Keep the [playground](https://flexbox-seven.vercel.app/) open next time a layout fights you — watching a property change in isolation is still the fastest way to build muscle memory.

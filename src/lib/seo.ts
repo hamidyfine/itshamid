@@ -1,16 +1,4 @@
-import type { SiteContent } from '../data/content';
-
-export interface SeoProps {
-  title?: string;
-  description?: string;
-  image?: string;
-  canonical?: string;
-  type?: 'website' | 'article';
-  publishedTime?: string;
-  modifiedTime?: string;
-  tags?: string[];
-  noindex?: boolean;
-}
+import type { SeoProps, SiteContent } from '../types';
 
 export function getSiteUrl(content: SiteContent): string {
   return content.site.url.replace(/\/$/, '');
@@ -44,7 +32,7 @@ export function buildSeo(content: SiteContent, props: SeoProps = {}) {
     siteName: content.site.name,
     locale: content.site.locale,
     author: content.site.author,
-    twitter: '@itshamid',
+    twitter: content.site.twitter,
   };
 }
 

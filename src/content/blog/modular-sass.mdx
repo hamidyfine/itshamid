@@ -1,0 +1,113 @@
+---
+title: "@use vs @forward in Sass"
+description: "Sass finally killed @import. Here's how @use and @forward actually work, when to reach for each, and the namespace rules that trip people up on day one."
+pubDate: 2023-04-08
+updatedDate: 2023-04-10
+tags: ["CSS", "Sass", "Tooling"]
+glyph: '<span class="br">@</span>use'
+coverCaption: "// Namespaces, forwarding, and why @import finally died."
+readTime: 5
+featured: false
+draft: false
+---
+
+import Callout from '../../components/mdx/Callout.astro';
+import PullQuote from '../../components/mdx/PullQuote.astro';
+
+For years, `@import` was the default way to split Sass across files. It also duplicated CSS output, made load order fragile, and let every file pollute the global namespace. **Dart Sass replaced it with `@use` and `@forward`** — and if you're still on `@import`, this is the migration worth doing before your next refactor.
+
+## `@use` — import with a namespace
+
+`@use` loads a module once and exposes its members through a namespace. Variables, mixins, and functions from the loaded file are accessed as `namespace.$variable` or `@include namespace.mixin()`.
+
+```scss title="_variables.scss"
+$primary-color: #007bff;
+$secondary-color: #6c757d;
+```
+
+```scss title="styles.scss"
+@use 'variables';
+
+body {
+  background-color: variables.$primary-color;
+  color: variables.$secondary-color;
+}
+```
+
+<Callout>
+**Always namespace.** Unlike `@import`, `@use` does not dump names into the global scope. If you want shorter names, pass `as *` — but do that sparingly, or you've recreated the old problem.
+</Callout>
+
+You can also alias a module:
+
+```scss
+@use 'variables' as vars;
+
+body {
+  color: vars.$primary-color;
+}
+```
+
+## `@forward` — re-export a module's API
+
+`@forward` makes another file's members available to whatever imports *your* file. Think of it as building a public API layer: consumers `@use` your entry file without knowing the internal file structure.
+
+```scss title="_variables.scss"
+$primary-color: #007bff;
+$secondary-color: #6c757d;
+```
+
+```scss title="_mixins.scss"
+@use 'variables';
+
+@mixin button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  color: #fff;
+  background-color: variables.$primary-color;
+  border-radius: 0.25rem;
+}
+```
+
+```scss title="_index.scss"
+@forward 'variables';
+@forward 'mixins';
+```
+
+```scss title="styles.scss"
+@use 'index' as *;
+
+.button {
+  @include button;
+}
+```
+
+<PullQuote>@use is for consuming. @forward is for publishing.</PullQuote>
+
+With `@forward`, you can also hide or rename members before re-exporting:
+
+```scss title="_index.scss"
+@forward 'variables' hide $internal-token;
+@forward 'mixins' show button;
+```
+
+## When to use which
+
+| Directive | Reach for it when… |
+|-----------|-------------------|
+| `@use` | You need variables, mixins, or functions from another file in the current file. |
+| `@forward` | You're building a barrel file or design-system entry point that re-exports an internal module tree. |
+| Both | Common pattern: `@forward` in `_index.scss`, `@use` in leaf files that need dependencies. |
+
+<Callout>
+**Load order is automatic.** Sass resolves the dependency graph for you. No more `@import` chains where file B silently depends on file A having loaded first.
+</Callout>
+
+## The short version
+
+- **`@use`** — pull members in, always namespaced.
+- **`@forward`** — pass members through to downstream consumers.
+- **`@import`** — deprecated; migrate when you touch a file, not all at once.
+
+Once the namespace habit clicks, Sass modules feel less like ceremony and more like the package boundaries you already expect in TypeScript.

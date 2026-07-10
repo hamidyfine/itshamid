@@ -23,5 +23,5 @@ const html = await codeToHtml(code.trimEnd(), {
     <span class="cb-dot" style="background:#28c840"></span>
     <span class="cb-file">{fileLabel}</span>
   </div>
-  <div set:html={html} />
+  <div class="codeblock-body" set:html={html} />
 </div>

@@ -271,7 +271,7 @@ export const content = {
     languages: [
       { name: 'English', level: 'Advanced', percent: 90 },
       { name: 'Persian', level: 'Native', percent: 100 },
-      { name: 'Turkish', level: 'Intermediate', percent: 60 },
+      // { name: 'Turkish', level: 'Intermediate', percent: 60 },
     ],
     experience: [
       {

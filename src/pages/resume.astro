@@ -49,10 +49,7 @@ const resume = content.resume;
           <div class="side-card">
             <div class="side-title"><span class="si">◆</span> {resume.sections.skills}</div>
             {resume.skills.map((skill) => (
-              <div class="sb-item">
-                <div class="sb-top"><span class="sb-label">{skill.name}</span><span class="sb-pct">{skill.level}%</span></div>
-                <div class="sb-track"><div class="sb-fill" style={`width:${skill.level}%`}></div></div>
-              </div>
+              <div class="cert-row"><span class="cci">●</span> {skill.name}</div>
             ))}
           </div>
           <div class="side-card">

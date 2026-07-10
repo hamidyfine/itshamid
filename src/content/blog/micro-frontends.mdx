@@ -1,0 +1,81 @@
+---
+title: "Micro-frontends without the chaos"
+description: "Splitting a monolith into independently deployable frontends sounds clean on a whiteboard. Here's what actually held up in production — the boundaries, the shared contracts, and the mistakes I'd undo."
+pubDate: 2026-06-14
+tags: ["Architecture", "Micro-frontends", "React"]
+glyph: '<span class="br">&lt;</span>mfe<span class="br">/&gt;</span>'
+coverCaption: "// Four teams, four deploy pipelines, one shell that stitches them together at runtime."
+readTime: 8
+featured: true
+draft: false
+---
+
+import CodeBlock from '../../components/mdx/CodeBlock.astro';
+import Callout from '../../components/mdx/Callout.astro';
+import PullQuote from '../../components/mdx/PullQuote.astro';
+
+Every few years someone declares the monolith dead and micro-frontends its replacement. That framing sells conference tickets, but it's wrong. **Micro-frontends are an organizational tool before they're a technical one.** If your teams aren't stepping on each other, you probably don't need them.
+
+At Heaptify we ran four product teams against a single React codebase. Deploys were a queue. A one-line copy change waited behind someone else's risky refactor. So we split — and here's what actually worked.
+
+## Draw boundaries around teams, not routes
+
+The first instinct is to slice by URL: `/dashboard` is one app, `/settings` is another. That feels tidy and ages badly. Routes get reorganized; ownership doesn't. We drew boundaries around the **team that owns the domain** instead.
+
+<PullQuote>A micro-frontend boundary should map to a Slack channel, not a URL prefix.</PullQuote>
+
+Once boundaries followed ownership, the shell's job became simple: mount the right remote for the current route and get out of the way.
+
+## The shell owns three things, and only three
+
+Scope creep in the shell is how micro-frontend projects die. Ours was allowed to own exactly three responsibilities:
+
+1. **Routing** — deciding which remote is active for a given URL.
+2. **Shared shell chrome** — the nav, the auth boundary, global toasts.
+3. **A tiny event bus** — the one sanctioned way remotes talk to each other.
+
+Everything else lived inside the remotes.
+
+<CodeBlock
+  lang="typescript"
+  filename="shell/registry.ts"
+  code={`// The whole contract between shell and remotes.
+export const registry = [
+  { match: '/dashboard', remote: 'dashboard@/remotes/dashboard.js' },
+  { match: '/budgets',   remote: 'budgets@/remotes/budgets.js' },
+  { match: '/settings',  remote: 'settings@/remotes/settings.js' },
+];
+
+export function resolve(pathname: string) {
+  return registry.find((r) => pathname.startsWith(r.match));
+}`}
+/>
+
+<Callout>
+**Keep the registry boring.** It should read like a config file a new engineer understands in thirty seconds. If resolving a remote needs its own README, the abstraction is leaking.
+</Callout>
+
+## Version the contract, not the components
+
+The failure mode everyone warns you about is shared-state hell. We sidestepped most of it with one rule — **remotes never import each other**. They import a versioned `@contracts` package of types and event names, and nothing else.
+
+### What I'd undo
+
+We over-invested in a shared component library too early. The lesson: **let duplication live until the pattern is obvious**, then extract.
+
+## Was it worth it?
+
+Deploy frequency roughly tripled and the release queue disappeared. If you can get there with a well-structured monorepo and good CI, do that first. Reach for micro-frontends when the org chart, not the codebase, is the thing that's slow.
+
+You can also use fenced code blocks directly in MDX:
+
+```typescript title="shell/event-bus.ts"
+type EventMap = {
+  'user:updated': { id: string };
+  'budget:changed': { id: string };
+};
+
+export function emit<K extends keyof EventMap>(event: K, payload: EventMap[K]) {
+  window.dispatchEvent(new CustomEvent(event, { detail: payload }));
+}
+```

@@ -1,0 +1,51 @@
+---
+import { getContent } from '../data/content';
+
+interface Props {
+  post: {
+    id: string;
+    data: {
+      title: string;
+      description: string;
+      pubDate: Date;
+      tags: string[];
+      glyph?: string;
+      readTime?: number;
+    };
+  };
+}
+
+const { post } = Astro.props;
+const content = getContent();
+const glyph = post.data.glyph ?? post.data.title.slice(0, 4);
+const date = post.data.pubDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+const readTime = post.data.readTime
+  ? `${post.data.readTime} ${content.blog.minRead}`
+  : undefined;
+const primaryTag = post.data.tags[0];
+---
+
+<a class="blog-card" href={`/blog/${post.id}`}>
+  <div class="blog-thumb">
+    <span class="glyph" set:html={glyph} />
+  </div>
+  <div class="blog-body">
+    <div class="blog-meta">
+      {primaryTag && <span class="blog-tag">{primaryTag}</span>}
+      <span class="blog-dot"></span>
+      <span>{date}</span>
+      {readTime && (
+        <>
+          <span class="blog-dot"></span>
+          <span>{readTime}</span>
+        </>
+      )}
+    </div>
+    <div class="blog-card-title">{post.data.title}</div>
+    <div class="blog-excerpt">{post.data.description}</div>
+    <div class="blog-readmore">
+      {content.blog.readPost}
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </div>
+  </div>
+</a>

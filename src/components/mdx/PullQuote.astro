@@ -1,0 +1,9 @@
+---
+interface Props {
+  children?: string;
+}
+
+const { children } = Astro.props;
+---
+
+<blockquote class="pullquote">{children ?? <slot />}</blockquote>

@@ -1,0 +1,117 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getContent, formatTemplate } from '../data/content';
+
+const content = getContent();
+const resume = content.resume;
+---
+
+<BaseLayout
+  activeNav="/resume"
+  title={resume.seoTitle}
+  description={formatTemplate(resume.seoDescription, {
+    author: content.site.author,
+    subtitle: resume.subtitle,
+  })}
+  canonical="/resume"
+>
+  <section class="band" id="top" style="padding-top:40px; padding-bottom:24px;">
+    <div class="inner">
+      <div class="maroon-band">
+        <div class="maroon-label">{resume.label}</div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap;">
+          <div>
+            <div class="rasa-title" style="margin-bottom:10px;">{resume.name[0]} <em>{resume.name[1]}</em></div>
+            <div style="font-size:15px; color:rgba(255,255,255,.6);">{resume.subtitle}</div>
+          </div>
+          <a
+            class="btn btn-orange"
+            href={resume.pdf.href}
+            download={resume.pdf.download}
+          >
+            {resume.downloadPdf}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" style="padding-top:16px;">
+    <div class="inner">
+      <div class="resume-cols">
+        <aside class="exp-side">
+          <div class="side-card">
+            <div class="side-title"><span class="si">◆</span> {resume.sections.contact}</div>
+            {resume.contact.map((row) => (
+              <div class="contact-row"><span class="cri">●</span> {row.text}</div>
+            ))}
+          </div>
+          <div class="side-card">
+            <div class="side-title"><span class="si">◆</span> {resume.sections.skills}</div>
+            {resume.skills.map((skill) => (
+              <div class="sb-item">
+                <div class="sb-top"><span class="sb-label">{skill.name}</span><span class="sb-pct">{skill.level}%</span></div>
+                <div class="sb-track"><div class="sb-fill" style={`width:${skill.level}%`}></div></div>
+              </div>
+            ))}
+          </div>
+          <div class="side-card">
+            <div class="side-title"><span class="si">◆</span> {resume.sections.certifications}</div>
+            {resume.certifications.map((cert) => (
+              <div class="cert-row"><span class="cci">●</span> {cert}</div>
+            ))}
+          </div>
+          <div class="side-card">
+            <div class="side-title"><span class="si">◆</span> {resume.sections.languages}</div>
+            {resume.languages.map((lang) => (
+              <div class="sb-item">
+                <div class="sb-top"><span class="sb-label">{lang.name}</span><span class="sb-pct">{lang.level}</span></div>
+                <div class="sb-track"><div class="sb-fill" style={`width:${lang.percent}%`}></div></div>
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        <div class="resume-main">
+          <p class="resume-summary" set:html={resume.summary} />
+
+          <div class="resume-block">
+            <div class="resume-block-title"><span class="rbi">◆</span> {resume.sections.experience}</div>
+            {resume.experience.map((item) => (
+              <div class:list={['rexp', item.current && 'now']}>
+                <div class="rexp-head">
+                  <span class="rexp-role">{item.role}</span>
+                  <span class="rexp-period">{item.period}</span>
+                </div>
+                <div class="rexp-company"><strong>{item.company}</strong> · {item.location}</div>
+                <ul class="rexp-list">
+                  {item.highlights.map((h) => <li>{h}</li>)}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div class="resume-block">
+            <div class="resume-block-title"><span class="rbi">◆</span> {resume.sections.education}</div>
+            {resume.education.map((edu) => (
+              <div class="edu-item rexp">
+                <div class="rexp-head">
+                  <span class="rexp-role">{edu.degree}</span>
+                  <span class="rexp-period">{edu.period}</span>
+                </div>
+                <div class="rexp-company"><strong>{edu.school}</strong> · {edu.location}</div>
+              </div>
+            ))}
+          </div>
+
+          <div class="resume-block" style="margin-bottom:0;">
+            <div class="resume-block-title"><span class="rbi">◆</span> {resume.sections.techStack}</div>
+            <div class="side-chips">
+              {resume.techStack.map((tech) => <span class="chip">{tech}</span>)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

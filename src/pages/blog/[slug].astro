@@ -1,0 +1,141 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import Pre from '../../components/mdx/Pre.astro';
+import Callout from '../../components/mdx/Callout.astro';
+import PullQuote from '../../components/mdx/PullQuote.astro';
+import CodeBlock from '../../components/mdx/CodeBlock.astro';
+import { getContent } from '../../data/content';
+import { formatDate } from '../../lib/seo';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const content = getContent();
+const { Content } = await render(post);
+
+const allPosts = (await getCollection('blog'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const index = allPosts.findIndex((p) => p.id === post.id);
+const prev = allPosts[index + 1];
+const next = allPosts[index - 1];
+const related = allPosts.filter((p) => p.id !== post.id).slice(0, 3);
+
+const canonical = `/blog/${post.id}`;
+const publishedTime = post.data.pubDate.toISOString();
+const modifiedTime = (post.data.updatedDate ?? post.data.pubDate).toISOString();
+---
+
+<BaseLayout
+  activeNav="/blog"
+  title={post.data.title}
+  description={post.data.description}
+  canonical={canonical}
+  type="article"
+  publishedTime={publishedTime}
+  modifiedTime={modifiedTime}
+  tags={post.data.tags}
+>
+  <div class="progress" id="progress"></div>
+
+  <article>
+    <header class="article-head">
+      <div class="crumb">
+        <a href="/blog">{content.blog.post.backLink}</a>
+        <span>/</span>
+        <span>{post.data.tags[0]}</span>
+      </div>
+      <div class="article-tags">
+        {post.data.tags.map((tag) => <span class="a-tag">{tag}</span>)}
+      </div>
+      <h1 class="article-title">{post.data.title}</h1>
+      <p class="article-lede">{post.data.description}</p>
+      <div class="byline">
+        <div class="byline-av">{content.site.initials}</div>
+        <div class="byline-txt">
+          <div class="byline-name">{content.site.author}</div>
+          <div class="byline-meta">
+            <span>{formatDate(post.data.pubDate)}</span>
+            <span class="blog-dot"></span>
+            <span>{post.data.readTime ?? 5} {content.blog.minRead}</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="cover">
+      <span class="glyph" set:html={post.data.glyph ?? post.data.title.slice(0, 6)} />
+    </div>
+    {post.data.coverCaption && <div class="cover-cap">{post.data.coverCaption}</div>}
+
+    <div class="article">
+      <Content components={{ pre: Pre, Callout, PullQuote, CodeBlock }} />
+    </div>
+  </article>
+
+  <div class="article-foot">
+    <div class="tag-row">
+      {post.data.tags.map((tag) => <span class="chip">{tag}</span>)}
+    </div>
+    <div class="author-card">
+      <div class="ac-av">{content.site.initials}</div>
+      <div>
+        <div class="ac-name">{content.site.author}</div>
+        <div class="ac-bio">{content.blog.authorBio}</div>
+        <div class="ac-links">
+          <a class="btn btn-ghost" href="/#contact" style="padding:8px 16px; font-size:13px;">{content.nav.cta.label}</a>
+          <a class="btn btn-ghost" href="/blog" style="padding:8px 16px; font-size:13px;">{content.blog.post.morePosts}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {(prev || next) && (
+    <nav class="morenav">
+      {prev ? (
+        <a class="prev" href={`/blog/${prev.id}`}>
+          <span class="mn-dir">{content.blog.post.previous}</span>
+          <span class="mn-title">{prev.data.title}</span>
+        </a>
+      ) : <div />}
+      {next ? (
+        <a class="next" href={`/blog/${next.id}`}>
+          <span class="mn-dir">{content.blog.post.next}</span>
+          <span class="mn-title">{next.data.title}</span>
+        </a>
+      ) : <div />}
+    </nav>
+  )}
+
+  {related.length > 0 && (
+    <section class="related-wrap">
+      <div class="related-head">{content.blog.post.keepReading}</div>
+      <div class="blog-grid">
+        {related.map((p) => <BlogCard post={p} />)}
+      </div>
+    </section>
+  )}
+
+  <script>
+    const bar = document.getElementById('progress');
+    function onScroll() {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      if (bar) bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  </script>
+</BaseLayout>
+
+<style>
+  .footer { margin-top: 64px; }
+</style>

@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import { getContent } from '../../data/content';
+import { getCollection } from 'astro:content';
+import { formatDate } from '../../lib/seo';
+
+const content = getContent();
+const posts = (await getCollection('blog'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const featured = posts.find((p) => p.data.featured) ?? posts[0];
+const rest = posts.filter((p) => p.id !== featured?.id);
+---
+
+<BaseLayout
+  activeNav="/blog"
+  title={content.blog.seoTitle}
+  description={content.blog.pageDescription}
+  canonical="/blog"
+>
+  <section class="band blog-hero">
+    <div class="inner">
+      <div class="section-label">{content.blog.label}</div>
+      <h2 class="section-title">
+        {content.blog.pageTitle[0]} <em>{content.blog.pageTitle[1]}</em><br>&amp; {content.blog.pageTitle[2]}
+      </h2>
+      <p class="blog-hero-desc">{content.blog.pageDescription}</p>
+    </div>
+  </section>
+
+  <section class="band" style="padding-top:12px;">
+    <div class="inner">
+      <!-- <div class="filter-bar" id="blog-filters">
+        {content.blog.filters.map((filter, i) => (
+          <button class:list={['filter-btn', i === 0 && 'active']} data-filter={filter === 'All posts' ? 'all' : filter}>
+            {filter}
+          </button>
+        ))}
+      </div> -->
+
+      {featured && (
+        <a class="featured" href={`/blog/${featured.id}`} style="margin-top:28px;" data-tags={featured.data.tags.join(',')}>
+          <div class="featured-art">
+            <span class="glyph" set:html={featured.data.glyph ?? featured.data.title.slice(0, 6)} />
+          </div>
+          <div class="featured-body">
+            <div class="featured-kicker">{content.blog.featuredKicker} · {featured.data.tags[0]}</div>
+            <div class="featured-title">{featured.data.title}</div>
+            <div class="featured-excerpt">{featured.data.description}</div>
+            <div class="featured-meta">
+              <span>{formatDate(featured.data.pubDate)}</span>
+              <span class="blog-dot"></span>
+              <span>{featured.data.readTime ?? 5} {content.blog.minRead}</span>
+              <span class="blog-dot"></span>
+              <span>{content.site.author}</span>
+            </div>
+          </div>
+        </a>
+      )}
+
+      <div class="blog-grid" id="blog-grid">
+        {rest.map((post) => (
+          <div data-tags={post.data.tags.join(',')}>
+            <BlogCard post={post} />
+          </div>
+        ))}
+      </div>
+
+      <!-- <div class="news" style="margin-top:40px;">
+        <div>
+          <div class="news-title">{content.blog.newsletter.title}</div>
+          <div class="news-desc">{content.blog.newsletter.description}</div>
+        </div>
+        <form class="news-form" onsubmit="return false;">
+          <input class="news-input" type="email" placeholder={content.blog.newsletter.placeholder} aria-label={content.blog.emailAriaLabel} />
+          <button class="btn btn-orange" type="submit">{content.blog.newsletter.button}</button>
+        </form>
+      </div> -->
+    </div>
+  </section>
+
+  <script>
+    const buttons = document.querySelectorAll('#blog-filters .filter-btn');
+    const cards = document.querySelectorAll('#blog-grid > div, .featured');
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        buttons.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.getAttribute('data-filter');
+        cards.forEach((card) => {
+          const tags = card.getAttribute('data-tags') ?? '';
+          const show = filter === 'all' || tags.split(',').includes(filter ?? '');
+          (card as HTMLElement).style.display = show ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</BaseLayout>

@@ -1,0 +1,44 @@
+---
+interface Props {
+  filename?: string;
+  lang?: string;
+  class?: string;
+}
+
+const { filename, class: className } = Astro.props;
+const lang = Astro.props.lang ?? className?.replace('language-', '') ?? 'text';
+---
+
+<div class="codeblock">
+  {filename && (
+    <div class="codeblock-bar">
+      <span class="cb-dot" style="background:#ff5f57"></span>
+      <span class="cb-dot" style="background:#febc2e"></span>
+      <span class="cb-dot" style="background:#28c840"></span>
+      <span class="cb-file">{filename}</span>
+    </div>
+  )}
+  <pre data-language={lang}><slot /></pre>
+</div>
+
+<style>
+  pre {
+    padding: 18px 20px;
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: pre;
+    color: rgba(255,255,255,.85);
+    overflow-x: auto;
+    margin: 0;
+    background: transparent;
+    font-family: var(--mono);
+  }
+  pre :global(code) {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+    font-family: inherit;
+  }
+</style>

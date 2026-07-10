@@ -17,7 +17,7 @@ function isActive(href: string): boolean {
 }
 ---
 
-<nav class="nav">
+<nav class="nav" id="site-nav">
   <div class="nav-inner">
     <div class="nav-left">
       <a class="nav-logo" href="/">
@@ -34,6 +34,55 @@ function isActive(href: string): boolean {
     <div class="nav-right">
       <!-- <div class="status"><span class="dot"></span> {content.nav.status}</div> -->
       <a class="nav-cta" href={content.nav.cta.href}>{content.nav.cta.label}</a>
+      <button
+        class="nav-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="nav-drawer"
+        aria-label="Open menu"
+      >
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+      </button>
     </div>
   </div>
+  <div class="nav-drawer" id="nav-drawer" hidden>
+    {content.nav.links.map((link) => (
+      <a class:list={['nav-drawer-link', { active: isActive(link.href) }]} href={link.href}>
+        {link.label}
+      </a>
+    ))}
+  </div>
 </nav>
+
+<script>
+  const nav = document.getElementById('site-nav');
+  const toggle = nav?.querySelector('.nav-toggle');
+  const drawer = document.getElementById('nav-drawer');
+
+  function setOpen(open: boolean) {
+    if (!nav || !toggle || !drawer) return;
+    nav.classList.toggle('nav-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    drawer.hidden = !open;
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+
+  toggle?.addEventListener('click', () => {
+    setOpen(!nav?.classList.contains('nav-open'));
+  });
+
+  drawer?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => setOpen(false));
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && nav?.classList.contains('nav-open')) setOpen(false);
+  });
+
+  window.matchMedia('(min-width: 901px)').addEventListener('change', (e) => {
+    if (e.matches) setOpen(false);
+  });
+</script>

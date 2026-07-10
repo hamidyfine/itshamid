@@ -147,6 +147,57 @@ img {
     background: var(--orange-hover);
     color: #fff;
 }
+.nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--cream2);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.nav-toggle-bar {
+    display: block;
+    width: 16px;
+    height: 2px;
+    margin: 0 auto;
+    background: var(--ink);
+    border-radius: 1px;
+    transition: transform 0.2s, opacity 0.2s;
+}
+.nav-open .nav-toggle-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+.nav-open .nav-toggle-bar:nth-child(2) {
+    opacity: 0;
+}
+.nav-open .nav-toggle-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+.nav-drawer {
+    display: none;
+}
+.nav-drawer-link {
+    display: block;
+    padding: 14px var(--pad);
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink2);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    transition: color 0.15s, background 0.15s;
+}
+.nav-drawer-link:hover,
+.nav-drawer-link.active {
+    color: var(--orange);
+    background: var(--cream2);
+}
 
 /* ── LAYOUT ──────────────────────────────────────────── */
 .band {
@@ -1953,13 +2004,31 @@ img {
         text-align: left;
     }
     .feature-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
     }
     .proj-grid,
     .blog-grid {
         grid-template-columns: 1fr;
     }
     .nav-links {
+        display: none;
+    }
+    .nav-toggle {
+        display: flex;
+    }
+    .nav-drawer {
+        display: block;
+        position: absolute;
+        top: var(--nav-h);
+        left: 0;
+        right: 0;
+        background: color-mix(in srgb, var(--cream) 96%, transparent);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        z-index: 199;
+    }
+    .nav-drawer[hidden] {
         display: none;
     }
     .maroon-band {
@@ -1985,8 +2054,18 @@ img {
         flex: 1;
         min-width: 148px;
     }
+    .contact-social {
+        justify-content: center;
+        width: 100%;
+    }
     .contact-social-link {
         min-width: 48px;
+    }
+    .cover {
+        margin-left: var(--pad);
+        margin-right: var(--pad);
+        width: auto;
+        height: 220px;
     }
 }
 

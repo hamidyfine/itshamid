@@ -209,7 +209,7 @@ export const content = {
     ],
     scheduleMeeting: {
       label: 'Schedule a meeting',
-      href: 'https://calendly.com/hamid-yaftian/itshamid',
+      href: 'https://cal.com/itshamid/catch-up',
     },
     links: [
       { platform: 'Email', handle: 'hamid.yaftian@gmail.com', href: 'mailto:hamid.yaftian@gmail.com', wide: true, icon: 'email' },

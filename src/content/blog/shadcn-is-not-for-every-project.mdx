@@ -1,0 +1,170 @@
+---
+title: "Why Shadcn isn't always the right choice"
+description: "Shadcn/ui is great for side projects and MVPs. On a large, multi-developer codebase, copy-paste components turn into duplicate APIs, version drift, and a design system nobody owns."
+pubDate: 2026-08-15
+tags: ["React", "Design Systems", "Frontend"]
+glyph: '<span class="br">npx</span> shadcn'
+coverCaption: "// Copy-paste components aren't a design system. They're a starting point that large teams rarely finish."
+readTime: 8
+featured: false
+draft: false
+---
+
+import Callout from '../../components/mdx/Callout.astro';
+import PullQuote from '../../components/mdx/PullQuote.astro';
+
+Shadcn/ui is one of the most popular tools in the modern frontend ecosystem right now. And honestly, it deserves the hype. You get beautifully designed, accessible components without being locked into someone else's package.
+
+For side projects, MVPs, and small teams, it's great.
+
+But "great for small projects" somehow turned into "great for everything." I don't think that's true. After using Shadcn on a large, multi-developer codebase, I've come to believe it's a poor fit for big, long-lived projects — unless your team puts in real effort to keep it under control.
+
+Here's why.
+
+## The core problem: it's copy-paste, not a package
+
+Shadcn isn't a traditional component library. You don't `npm install` it. The CLI drops the component source code directly into your project. From that point on, it's yours.
+
+<PullQuote>Full ownership sounds great — until you have twelve developers with twelve different opinions on how a Button should work.</PullQuote>
+
+### 1. Without a style guide, everyone builds their own dialect
+
+No enforced conventions means components drift fast:
+
+- Dev A copies a `Card`, tweaks it slightly.
+- Dev B needs something similar, doesn't know one exists, copies a fresh one from Shadcn's site.
+- Dev C grabs a "Card" example from a random tutorial online.
+
+A year later, you don't have a design system. You have a pile of near-duplicate components.
+
+**In code**, this looks like:
+
+```text title="components/"
+components/
+  ui/button.tsx              // original shadcn button
+  common/PrimaryButton.tsx   // hardcoded blue variant
+  forms/SubmitButton.tsx     // has its own spinner
+  shared/AppButton.tsx       // an abandoned "let's unify" attempt
+```
+
+Four buttons. Four APIs (`isLoading` vs `loading` vs `pending`). No clear answer on which one to use.
+
+### 2. Maintenance turns into archaeology
+
+There's no upstream to pull fixes from. If Radix or Shadcn patches a bug, you don't get it automatically. You have to:
+
+1. Know the fix exists
+2. Find your copy of the component
+3. Manually merge the fix in
+4. Hope nothing conflicts with your team's past edits
+
+**In code**: Radix fixes a focus-trap bug in Dialog. With a real package, `npm update` solves it. With Shadcn, someone has to remember your `dialog.tsx` was copied eight months ago, diff it against the current source, and merge by hand.
+
+It gets worse with the headless packages underneath. Shadcn components are built on top of libraries like Radix UI. That same Radix primitive — say, `@radix-ui/react-popover` — is quietly shared by your `Select`, `Dropdown`, `Tooltip`, and `Combobox` components, since Shadcn generated all of them from it at different times. Bumping that dependency to fix one component can shift behavior in the others, but there's no single place that tracks "these four components all depend on this one package." You're left testing every component built on top of it, by hand, just to be sure the update didn't quietly break something two features away.
+
+<Callout>
+**There's no changelog for your copies.** A real package forces structure just by having a maintainer. Shadcn doesn't come with that — your team has to build it, and most don't until it's already a problem.
+</Callout>
+
+### 3. Copy-pasted components accumulate hidden mess
+
+A component looks clean the day it lands in your project. It rarely stays that way. Someone under deadline pressure copies a component, tweaks it to "just work," and moves on.
+
+Do that enough times, and you get inconsistent naming, mismatched styling patterns, and logic nobody fully understands anymore.
+
+**In code**, one dropdown might be clean Tailwind:
+
+```jsx title="dropdown.tsx"
+<div className="rounded-md border bg-popover p-1 shadow-md">
+```
+
+While another has inline patches bolted on under pressure:
+
+```jsx title="dropdown.tsx"
+<div
+  className="rounded-md border bg-popover p-1 shadow-md"
+  style={{ zIndex: 9999, minWidth: '220px', marginTop: '-4px' }}
+>
+```
+
+Both "work." But now there are two conventions for the same component.
+
+### 4. Changing shared behavior becomes risky
+
+In a real library, adding a feature is a version bump. With Shadcn, it's a manual audit.
+
+**In code**: product wants a new `destructive` button variant. With a single source of truth, you add it once:
+
+```tsx title="design-system/Button.tsx"
+const variants = {
+  default: 'bg-primary text-primary-foreground',
+  destructive: 'bg-destructive text-destructive-foreground',
+}
+```
+
+With Shadcn copied five times across the app, you instead grep the codebase for every `Button.tsx` variant, check if each one still matches the original structure, and update them one by one — hoping you didn't miss one.
+
+This is also why refactoring gets harder the longer a project lives. A "quick" refactor of the `Button` component — say, switching it to a new styling approach or consolidating variants — stops being quick once there are five divergent copies, each with small custom behavior someone added along the way. What should be a same-day change turns into a multi-week audit just to make sure nothing downstream breaks.
+
+### 5. Uncoordinated updates overwrite each other
+
+Because there's no shared source of truth, two people (or an auto-generation script) touching the "same" component can silently undo each other's work.
+
+**In code**: Dev A installs `Select` and uses it in a settings form. A few weeks later, Dev B reuses that same `Select` in a checkout flow, notices a UI bug — say, the dropdown clipping on mobile — and fixes it directly in the component. That fix changes positioning logic that Dev A's settings form was quietly relying on, and now the settings page is broken. No one notices until QA or a user reports it, and by then it's hard to tell which change broke what.
+
+The same thing happens with automation. If someone re-runs the Shadcn CLI to "update" a component, or a script regenerates it from the latest template, it can silently overwrite custom logic a developer added months ago. There's no merge conflict, no warning — the file just gets replaced. Recovering the lost changes means digging through git blame and hoping the person who wrote them is still around to explain why they were there.
+
+## A few more reasons this gets worse at scale
+
+- **No enforced design tokens.** Shadcn gives you a starting point, not a contract. Without early discipline on spacing, color, and typography, visual inconsistency creeps in.
+- **Version drift.** Components generated at different times can end up on different versions of Shadcn or Radix, each with slightly different APIs.
+- **Harder onboarding.** New developers have no single place to learn "how we build UI here." They reverse-engineer conventions from whatever file they open first.
+- **More testing burden.** Once you copy a component, its accessibility and edge cases are entirely your responsibility — you lose the benefit of a battle-tested shared library.
+- **No built-in governance.** A real package forces some structure just by having a changelog and a maintainer. Shadcn doesn't come with that — your team has to build it, and most don't until it's already a problem.
+- **AI agents don't remove the risk.** Some teams now let an AI agent scaffold and wire up Shadcn components automatically, driven by a skill or a script. It feels safer because a human isn't hand-copying code anymore — but the underlying model is identical. The agent is still generating fresh copies, still capable of duplicating an existing component instead of reusing it, and still capable of overwriting custom edits on a "refresh." Automating the copy-paste doesn't fix the copy-paste problem; it just makes it faster.
+
+## What about linters?
+
+A natural response to all of this is: "just enforce it with ESLint and Stylelint." It helps, but it doesn't solve the core problem.
+
+**What linters are good at:**
+
+- Catching unused imports, inconsistent formatting, and dead code
+- Enforcing import order and file naming conventions
+- Flagging disallowed patterns, like raw hex colors instead of design tokens, if you write a custom rule for it
+- Stylelint catching inconsistent class ordering or stray inline styles in Tailwind projects
+
+**What linters can't do:**
+
+- Tell you that `PrimaryButton.tsx` and `AppButton.tsx` are functionally the same component with different names
+- Know that a `Select` fix in one place will affect a different feature that reuses it
+- Detect that a component was silently overwritten by a regenerated copy
+- Stop a developer from copying a fresh component instead of importing the existing one — there's no rule that reliably catches "you should have reused this"
+
+<Callout>
+**A linter keeps files tidy.** It doesn't tell you those files shouldn't have existed as separate copies in the first place. Without one, a large Shadcn project drifts faster. With one, you get a cleaner-looking codebase on the surface — but duplication, ownership, and version drift are still there.
+</Callout>
+
+## Where Shadcn genuinely shines
+
+To be fair, none of this makes Shadcn a bad tool. It's just the wrong tool in certain contexts. It works well for:
+
+- Small teams or solo developers who want full control
+- Prototypes and MVPs where speed beats long-term structure
+- Projects with a small, well-aligned component surface area
+- Teams willing to treat Shadcn output as a *starting point*, then wrap it in their own documented design system
+
+## The real takeaway
+
+<PullQuote>Shadcn isn't the problem. The lack of structure around it is.</PullQuote>
+
+If a large team adopts it without agreeing on ownership, documentation, and a clear process for creating and modifying components, the "you own the code" pitch that makes Shadcn appealing on paper becomes exactly what makes it unmanageable in practice.
+
+For a large, long-lived project, you're better off either:
+
+- Building a real internal component library on top of Shadcn's primitives (single source of truth, versioning, docs), or
+- Using a maintained library that gives you those guarantees out of the box
+
+Worth being honest about, though: even a strict design system, a complete style guide, and clear documentation won't make all of this disappear. They reduce the drift and make the ownership questions easier to answer, but you're still maintaining hand-owned code with no upstream — that part doesn't go away just because the rules around it are better written.
+
+Shadcn gives you the raw materials. Whether they become a coherent design system or a pile of mismatched parts depends entirely on the discipline your team brings to it.

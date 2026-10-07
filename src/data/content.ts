@@ -3,9 +3,9 @@ import type { SiteContent } from '../types';
 export const content = {
   site: {
     name: 'Hamid Yaftian',
-    title: 'Hamid Yaftian — Founder & CTO / Frontend Engineer',
+    title: 'Hamid Yaftian — Founder & CEO / Frontend Engineer',
     description:
-      'Founder & CTO at Rasa Money and a frontend engineer with 10+ years building resilient interfaces at scale. React, TypeScript, micro-frontends.',
+      'Founder & CEO at Rasa Money and a frontend engineer with 10+ years building resilient interfaces at scale. React, TypeScript, micro-frontend architecture.',
     url: 'https://itshamid.me',
     locale: 'en',
     author: 'Hamid Yaftian',
@@ -27,9 +27,9 @@ export const content = {
     ],
   },
   hero: {
-    pill: { text: 'Founder & CTO @ Rasa Money', href: '/#rasa' },
-    title: ['Founder & CTO,', 'Frontend', 'Engineer'],
-    bio: 'I lead product and engineering at <strong>Rasa Money</strong> while shipping fast, resilient interfaces at scale. A decade turning fuzzy product ideas into well-tested, maintainable frontends — grounded in <strong>React</strong>, <strong>TypeScript</strong>, and <strong>micro-frontend architecture</strong>.',
+    pill: { text: 'Founder & CEO @ Rasa Money', href: '/#rasa' },
+    title: ['Founder & CEO,', 'Frontend', 'Engineer'],
+    bio: 'I lead product and engineering at <strong>Rasa Money</strong> while shipping fast, resilient interfaces at scale. A decade turning fuzzy product ideas into well-tested, maintainable frontend solutions — grounded in <strong>React</strong>, <strong>TypeScript</strong>, and <strong>micro-frontend architecture</strong>.',
     actions: [
       { label: "Let's talk", href: '/#contact', variant: 'orange' },
       { label: 'View experience', href: '/#experience', variant: 'ghost' },
@@ -42,11 +42,11 @@ export const content = {
         run: './run.sh',
       },
       profile: {
-        role: 'Founder & CTO / Frontend Engineer',
+        role: 'Founder & CEO / Frontend Engineer',
         building: 'Rasa Money',
         experience: '10+ years',
         stack: ['JavaScript', 'TypeScript', 'React', 'GraphQL'],
-        focus: 'micro-frontends',
+        focus: 'micro-frontend',
       },
     },
     stats: [
@@ -60,7 +60,7 @@ export const content = {
     title: ['Rasa', 'Money'],
     badges: [
       { text: 'Founded 2026', variant: 'default' },
-      { text: 'Founder & CTO', variant: 'orange' },
+      { text: 'Founder & CEO', variant: 'orange' },
     ],
     description:
       'A personal-finance platform for people who live across currencies. Track spending, budget with intent, and see your whole financial picture — banks, cash, cards, and crypto — in one place.',
@@ -80,7 +80,7 @@ export const content = {
     timeline: [
       {
         period: '2026 — Present',
-        role: 'Founder & CTO',
+        role: 'Founder & CEO',
         company: 'Rasa Money',
         location: 'Remote',
         current: true,
@@ -153,7 +153,7 @@ export const content = {
     manual: {
       'rasa-money': {
         description:
-          'A personal-finance platform for people who live across currencies — multi-currency accounts, smart budgets, a live dashboard and bulk import. Founded and led as CTO.',
+          'Multi-currency personal finance for everyone, from freelancers to expats. Every transaction keeps its exchange rate. Free to start. Budgets, debts, recurring payments & Rasa AI. Founded and led as CEO.',
         url: 'https://rasamoney.com',
         homepage: 'https://rasamoney.com',
       },
@@ -187,7 +187,7 @@ export const content = {
       button: 'Subscribe',
     },
     authorBio:
-      'Founder & CTO at Rasa Money and a frontend engineer with a decade of shipping resilient interfaces at scale. Writes about architecture, testing, and building products solo.',
+      'Founder & CEO at Rasa Money and a frontend engineer with a decade of shipping resilient interfaces at scale. Writes about architecture, testing, and building products solo.',
     post: {
       backLink: '← Blog',
       morePosts: 'More posts',
@@ -228,7 +228,7 @@ export const content = {
   resume: {
     label: 'Curriculum vitae',
     name: ['Hamid', 'Yaftian'],
-    subtitle: 'Founder & CTO, Rasa Money · Frontend Engineer · 10+ years',
+    subtitle: 'Founder & CEO, Rasa Money · Frontend Engineer · 10+ years',
     seoTitle: 'Resume',
     seoDescription: 'Resume of {author} — {subtitle}',
     downloadPdf: 'Download PDF',
@@ -246,7 +246,7 @@ export const content = {
       techStack: 'Full tech stack',
     },
     summary:
-      'Founder & CTO of <a href="/#rasa">Rasa Money</a> and a frontend engineer with 10+ years building and leading high-performance web applications at scale. Deep expertise in React, TypeScript and micro-frontend architecture, with a consistent track record of technical leadership, design system ownership, and cross-functional delivery.',
+      'Founder & CEO of <a href="/#rasa">Rasa Money</a> and a frontend engineer with 10+ years building and leading high-performance web applications at scale. Deep expertise in React, TypeScript and micro-frontend architecture, with a consistent track record of technical leadership, design system ownership, and cross-functional delivery.',
     contact: [
       { icon: 'location', text: 'Türkiye · Remote' },
       { icon: 'email', text: 'hamid.yaftian@gmail.com' },
@@ -275,7 +275,7 @@ export const content = {
     ],
     experience: [
       {
-        role: 'Founder & CTO',
+        role: 'Founder & CEO',
         period: '2026 — Present',
         company: 'Rasa Money',
         location: 'Remote',
